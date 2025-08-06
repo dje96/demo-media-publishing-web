@@ -3,14 +3,21 @@
 // Note: This is a client component, so metadata is handled in the layout
 // The title will be "Contact | Media Publishing Demo" from the layout
 
+import { useEffect } from "react"
 import PageLayout from "@/src/components/page-layout"
 import PageHeader from "@/src/components/page-header"
 import FormInput from "@/src/components/form-input"
 import FormTextarea from "@/src/components/form-textarea"
 import { Mail, Phone, MapPin, Clock } from "lucide-react"
 import { siteConfig } from "@/src/lib/config"
+import { enableContactFormTracking } from "@/src/lib/snowplow-config"
 
 export default function ContactPage() {
+  // Enable form tracking for contact forms
+  useEffect(() => {
+    enableContactFormTracking();
+  }, []);
+
   return (
     <PageLayout>
       <main className="max-w-screen-xl mx-auto px-2 md:px-4 py-12">
@@ -24,7 +31,7 @@ export default function ContactPage() {
           {/* Contact Form */}
           <div className="bg-white rounded-lg shadow-md p-8">
             <h2 className="text-2xl font-bold text-gray-900 mb-6">Send us a Message</h2>
-            <form className="space-y-6">
+            <form className="space-y-6 contact-form">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <FormInput
                   id="firstName"

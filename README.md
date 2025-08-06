@@ -24,7 +24,7 @@ A modern, feature-rich media publishing platform built with Next.js 15, React 19
 - **Component Architecture**: Built with reusable React components and modular modals for optimal code organization
 
 ### Snowplow Tracking
-- **Out-Of-The-Box Tracking**: Automatically tracks page views, page pings, link clicks, consent interactions, and video events.
+- **Out-Of-The-Box Tracking**: Automatically tracks page views, page pings, link clicks, form interactions, consent interactions, and video events.
 - **Custom Media & Publishing Events**: Tracks custom events for interactions with articles, search, ads, etc.
 - **Snowtype**: All custom tracking implemented using Snowtype with included instructions file
 

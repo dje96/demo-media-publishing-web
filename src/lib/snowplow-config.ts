@@ -9,6 +9,7 @@ import {
   trackCmpVisible 
 } from '@snowplow/browser-plugin-enhanced-consent';
 import { SnowplowMediaPlugin } from '@snowplow/browser-plugin-media';
+import { FormTrackingPlugin, enableFormTracking } from '@snowplow/browser-plugin-form-tracking';
 import {
   startMediaTracking,
   trackMediaPlay,
@@ -31,7 +32,7 @@ export function initializeSnowplow() {
     contexts: {
       webPage: true
     },
-    plugins: [LinkClickTrackingPlugin(), EnhancedConsentPlugin(), SnowplowMediaPlugin()],
+    plugins: [LinkClickTrackingPlugin(), EnhancedConsentPlugin(), SnowplowMediaPlugin(), FormTrackingPlugin()],
     crossDomainLinker: function (linkElement) {
       // Enable cross-domain linking for snowplow.io domain
       // This adds a _sp parameter to outbound links containing the domain user ID and timestamp
@@ -56,10 +57,78 @@ export function initializeSnowplow() {
     }
   });
 
+  // Enable form tracking with configuration for contact forms
+  enableFormTracking({
+    options: {
+      // Track all forms by default, but you can customize this
+      forms: {
+        // Optional: Add specific form classes to track/ignore
+        // allowlist: ['contact-form'], // Only track forms with 'contact-form' class
+        // denylist: ['no-track'], // Exclude forms with 'no-track' class
+      },
+      fields: {
+        // Exclude sensitive fields from tracking
+        denylist: ['password', 'ssn', 'credit-card'],
+        // Optional: Transform function to redact sensitive data
+        transform: (value, elementInfo, element) => {
+          // Redact email addresses for privacy
+          if (element.name === 'email' || element.id === 'email') {
+            return '***@***.***';
+          }
+          // Redact phone numbers
+          if (element.name === 'phone' || element.id === 'phone') {
+            return '***-***-****';
+          }
+          return value;
+        }
+      }
+    }
+  });
+
   // Restore user ID from localStorage if available
   restoreUserFromStorage();
 
   console.log('Snowplow tracker initialized');
+}
+
+// Enable form tracking for contact forms with enhanced configuration
+export function enableContactFormTracking() {
+  enableFormTracking({
+    options: {
+      forms: {
+        // Track forms with contact-form class
+        allowlist: ['contact-form']
+      },
+      fields: {
+        // Exclude sensitive fields from tracking
+        denylist: ['password', 'ssn', 'credit-card'],
+        // Transform function to redact sensitive data for privacy
+        transform: (value, elementInfo, element) => {
+          // Redact email addresses for privacy
+          if (element.name === 'email' || element.id === 'email') {
+            return '***@***.***';
+          }
+          // Redact phone numbers
+          if (element.name === 'phone' || element.id === 'phone') {
+            return '***-***-****';
+          }
+          return value;
+        }
+      }
+    },
+    // Add context for contact form events
+    context: [
+      {
+        schema: 'iglu:com.demo.media/contact_form/jsonschema/1-0-0',
+        data: {
+          form_type: 'contact',
+          page: 'contact'
+        }
+      }
+    ]
+  });
+  
+  console.log('Contact form tracking enabled');
 }
 
 // Restore user ID from localStorage

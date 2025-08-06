@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@snowplow/browser-plugin-enhanced-consent": "^4.6.5",
+    "@snowplow/browser-plugin-form-tracking": "^4.6.5",
     "@snowplow/browser-plugin-link-click-tracking": "^4.6.3",
     "@snowplow/browser-plugin-media": "^4.6.5",
     "@snowplow/browser-plugin-web-vitals": "^4.6.3",
