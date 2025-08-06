@@ -29,6 +29,7 @@ enableActivityTracking({
 - **Page Views**: Automatically tracked on initial load and route changes
 - **Activity Tracking**: Enabled with 20-second minimum visit length and 10-second heartbeat
 - **Web Page Context**: Automatically attached to all events
+- **Form Tracking**: Automatically collect events when a user interacts with the form on the tracking
 
 ## Architecture
 

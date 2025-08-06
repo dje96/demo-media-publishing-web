@@ -157,7 +157,7 @@ export default function SubscribePage() {
         <p className="text-gray-600">Please provide your information to complete your subscription</p>
       </div>
       
-      <form onSubmit={handleDetailsSubmit} className="bg-white rounded-lg shadow-md p-6">
+      <form onSubmit={handleDetailsSubmit} className="bg-white rounded-lg shadow-md p-6 no-track">
         <div className="space-y-6">
           <div>
             <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
@@ -226,7 +226,7 @@ export default function SubscribePage() {
         <p className="text-gray-600">Complete your subscription with secure payment</p>
       </div>
       
-      <form onSubmit={handlePaymentSubmit} className="bg-white rounded-lg shadow-md p-6">
+      <form onSubmit={handlePaymentSubmit} className="bg-white rounded-lg shadow-md p-6 no-track">
         <div className="space-y-6">
           <div>
             <label htmlFor="cardNumber" className="block text-sm font-medium text-gray-700 mb-2">

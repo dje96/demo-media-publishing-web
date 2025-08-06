@@ -99,7 +99,6 @@ export interface SiteConfig {
         { source: "twitter", medium: "social", name: "Twitter" },
         { source: "newsletter", medium: "email", name: "Email Newsletter" },
         { source: "slack", medium: "referral", name: "Slack" },
-        { source: "direct", medium: "", name: "Direct" },
         { source: "substack", medium: "email", name: "Substack" },
         { source: "reddit", medium: "social", name: "Reddit" },
         { source: "medium_com", medium: "referral", name: "Medium" }

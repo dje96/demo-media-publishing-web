@@ -64,7 +64,8 @@ export function initializeSnowplow() {
       forms: {
         // Optional: Add specific form classes to track/ignore
         // allowlist: ['contact-form'], // Only track forms with 'contact-form' class
-        // denylist: ['no-track'], // Exclude forms with 'no-track' class
+        // Exclude forms with 'no-track' class
+        denylist: ['no-track'],
       },
       fields: {
         // Exclude sensitive fields from tracking
@@ -97,7 +98,9 @@ export function enableContactFormTracking() {
     options: {
       forms: {
         // Track forms with contact-form class
-        allowlist: ['contact-form']
+        allowlist: ['contact-form'],
+        // Exclude forms with 'no-track' class
+        denylist: ['no-track']
       },
       fields: {
         // Exclude sensitive fields from tracking

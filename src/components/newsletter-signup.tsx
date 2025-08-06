@@ -38,7 +38,7 @@ export default function NewsletterSignup() {
           </div>
         </div>
         
-        <form onSubmit={handleSubmit} className="flex flex-col w-full space-y-2">
+        <form onSubmit={handleSubmit} className="flex flex-col w-full space-y-2 no-track">
           <input
             type="email"
             placeholder="Enter your email"
