@@ -1,8 +1,8 @@
 import RecommendationCard from "./recommendation-card"
 import NewsletterSignup from "./newsletter-signup"
 import Advertisement from "./advertisement"
-import { getRecommendations } from "@/lib/recommendations"
-import { siteConfig } from "@/lib/config"
+import { getRecommendations } from "@/src/lib/recommendations"
+import { siteConfig } from "@/src/lib/config"
 
 interface SidebarProps {
   className?: string

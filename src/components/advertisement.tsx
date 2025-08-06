@@ -3,8 +3,8 @@
 import { ExternalLink } from "lucide-react"
 import Link from "next/link"
 import Image from "next/image"
-import { getRandomAdvertisement, getRandomAdvertisementByCategory } from "@/lib/config"
-import { trackAdImpression, trackAdClick } from "@/lib/snowplow-tracking"
+import { getRandomAdvertisement, getRandomAdvertisementByCategory } from "@/src/lib/config"
+import { trackAdImpression, trackAdClick } from "@/src/lib/business-events"
 import { useEffect, useRef } from "react"
 
 interface AdvertisementProps {

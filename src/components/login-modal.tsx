@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { X, Mail } from "lucide-react"
-import { trackCreateAccount } from "@/lib/snowplow-tracking"
+import { trackLoginSuccess } from "@/src/lib/business-events"
 
 interface LoginModalProps {
   isOpen: boolean
@@ -24,8 +24,8 @@ export default function LoginModal({ isOpen, onClose, onLogin }: LoginModalProps
     // Simulate API call
     await new Promise(resolve => setTimeout(resolve, 1000))
     
-    // Track create account
-    trackCreateAccount();
+    // Track login success
+    trackLoginSuccess('email');
     
     onLogin(email.trim())
     setIsLoading(false)

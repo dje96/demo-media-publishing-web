@@ -7,7 +7,7 @@ import Link from "next/link"
 import SearchDropdown from "./search-dropdown"
 import LoginModal from "./login-modal"
 import { useUser } from "../contexts/user-context"
-import { siteConfig } from "@/lib/config"
+import { siteConfig } from "@/src/lib/config"
 
 // Icon mapping for navigation items
 const iconMap = {
@@ -116,7 +116,7 @@ export default function Header() {
     }
 
     return (
-      <div className="px-3 py-2 border-t">
+      <div className="px-3 py-2 border-t space-y-2">
         <button
           onClick={() => {
             handleSubscribeClick()
@@ -127,6 +127,16 @@ export default function Header() {
           <LogIn className="h-4 w-4 mr-3" />
           Subscribe
         </button>
+        <button
+          onClick={() => {
+            setIsLoginModalOpen(true)
+            setIsMenuOpen(false)
+          }}
+          className="flex items-center w-full px-3 py-2 text-base font-medium text-brand-primary border border-brand-primary bg-white hover:bg-gray-50 rounded-md transition-colors"
+        >
+          <LogIn className="h-4 w-4 mr-3" />
+          Login
+        </button>
       </div>
     )
   }
@@ -134,13 +144,13 @@ export default function Header() {
   return (
     <>
       <header className="bg-white shadow-sm border-b">
-        <div className="max-w-screen-xl mx-auto px-2 md:px-4">
+        <div className="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             {/* Logo */}
             <div className="flex-shrink-0">
-              <Link href="/" className="flex items-center text-2xl font-bold text-brand-primary hover:text-brand-primary-hover transition-colors">
+              <Link href="/" className="flex items-center text-xl sm:text-2xl font-bold text-brand-primary hover:text-brand-primary-hover transition-colors">
                 <svg 
-                  className="w-8 h-8 mr-2" 
+                  className="w-6 h-6 sm:w-8 sm:h-8 mr-2" 
                   viewBox="0 0 32 32" 
                   fill="currentColor"
                   xmlns="http://www.w3.org/2000/svg"
@@ -149,12 +159,12 @@ export default function Header() {
                   <path d="M12,12H10V8h2a2,2,0,0,0,0-4H10A2.0023,2.0023,0,0,0,8,6v.5H6V6a4.0045,4.0045,0,0,1,4-4h2a4,4,0,0,1,0,8Z" transform="translate(0 0)"/>
                   <path d="M22.4479,21.0337A10.971,10.971,0,0,0,19.9211,4.7446l-.999,1.73A8.9967,8.9967,0,1,1,5,14H3a10.9916,10.9916,0,0,0,18.0338,8.4478L28.5859,30,30,28.5859Z" transform="translate(0 0)"/>
                 </svg>
-                {siteConfig.brand.name}
+                <span className="hidden sm:inline">{siteConfig.brand.name}</span>
               </Link>
             </div>
 
-            {/* Desktop Navigation */}
-            <nav className="hidden md:flex space-x-4">
+            {/* Desktop Navigation - Hidden on mobile */}
+            <nav className="hidden lg:flex space-x-4">
               {siteConfig.navigation.mainMenu.map((item) => {
                 const Icon = iconMap[item.icon as keyof typeof iconMap] || Home
                 const isActive = pathname === item.href
@@ -177,18 +187,20 @@ export default function Header() {
             <div className="flex items-center space-x-4">
               {/* Search */}
               {siteConfig.features.search && (
-              <div className="hidden md:block">
+              <div className="hidden lg:block">
                 <SearchDropdown />
               </div>
               )}
 
-              {/* User Menu */}
-              {siteConfig.features.userAccounts && renderAuthContent()}
+              {/* User Menu - Hidden on mobile, shown in hamburger menu */}
+              <div className="hidden lg:block">
+                {siteConfig.features.userAccounts && renderAuthContent()}
+              </div>
 
               {/* Mobile menu button */}
               <button
                 onClick={() => setIsMenuOpen(!isMenuOpen)}
-                className="md:hidden inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500"
+                className="lg:hidden inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500"
               >
                 {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
               </button>
@@ -197,7 +209,7 @@ export default function Header() {
 
           {/* Mobile Navigation */}
           {isMenuOpen && (
-            <div className="md:hidden">
+            <div className="lg:hidden">
               <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3 border-t">
                 {siteConfig.navigation.mainMenu.map((item) => {
                   const Icon = iconMap[item.icon as keyof typeof iconMap] || Home

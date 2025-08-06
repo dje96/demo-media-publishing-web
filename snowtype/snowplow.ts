@@ -114,6 +114,26 @@ export type Placement = "header" | "sidebar" | "footer" | "in-feed" | "native" |
 export type AdType = "banner" | "video" | "native" | "interstitial" | "rich_media" | "sponsored_content" | "search" | "email" | "audio";
 
 /**
+ * Captures steps as a user moves through the subscription workflow on a media and
+ * publishing site. - Generated from a property rule
+ */
+export type SubscriptionWorkflowConfirmPayment = {
+    /**
+     * The name of the step the user is currently on in the subscription workflow.
+     */
+    step_name: SubscriptionWorkflowConfirmPaymentStepName;
+    /**
+     * Additional information related to the current step.
+     */
+    value?: null | string;
+}
+
+/**
+ * The name of the step the user is currently on in the subscription workflow.
+ */
+export type SubscriptionWorkflowConfirmPaymentStepName = "confirm_payment";
+
+/**
  * Data structure for when a user interacts with an article - Generated from a property rule
  */
 export type ArticleInteractionArticleView = {
@@ -129,20 +149,24 @@ export type ArticleInteractionArticleView = {
 export type ArticleInteractionArticleViewType = "view";
 
 /**
- * Tracks types of user conversions such as purchases, signups, downloads, etc. - Generated
- * from a property rule
+ * Captures steps as a user moves through the subscription workflow on a media and
+ * publishing site. - Generated from a property rule
  */
-export type ConversionEventCreateAccount = {
+export type SubscriptionWorkflowPersonalDetails = {
     /**
-     * The type of conversion the user completed.
+     * The name of the step the user is currently on in the subscription workflow.
      */
-    conversion_type: ConversionEventCreateAccountConversionType;
+    step_name: SubscriptionWorkflowPersonalDetailsStepName;
+    /**
+     * Additional information related to the current step.
+     */
+    value?: null | string;
 }
 
 /**
- * The type of conversion the user completed.
+ * The name of the step the user is currently on in the subscription workflow.
  */
-export type ConversionEventCreateAccountConversionType = "signup";
+export type SubscriptionWorkflowPersonalDetailsStepName = "personal_details";
 
 /**
  * Tracks types of user conversions such as purchases, signups, downloads, etc. - Generated
@@ -152,13 +176,13 @@ export type ConversionEventNewsletterSignup = {
     /**
      * The type of conversion the user completed.
      */
-    conversion_type: ConversionEventNewsletterSignupConversionType;
+    conversion_type: ConversionType;
 }
 
 /**
  * The type of conversion the user completed.
  */
-export type ConversionEventNewsletterSignupConversionType = "newsletter_signup";
+export type ConversionType = "newsletter_signup";
 
 /**
  * Data structure for when a user interacts with an advertisement - Generated from a
@@ -291,6 +315,73 @@ export type ArticleFullSearch = {
 }
 
 /**
+ * Captures steps as a user moves through the subscription workflow on a media and
+ * publishing site. - Generated from a property rule
+ */
+export type SubscriptionWorkflowSelectAPlan = {
+    /**
+     * The name of the step the user is currently on in the subscription workflow.
+     */
+    step_name: SubscriptionWorkflowSelectAPlanStepName;
+    /**
+     * Whether the user selects a monthly or annual plan
+     */
+    value?: Value;
+}
+
+/**
+ * The name of the step the user is currently on in the subscription workflow.
+ */
+export type SubscriptionWorkflowSelectAPlanStepName = "select_plan";
+
+/**
+ * Whether the user selects a monthly or annual plan
+ */
+export type Value = "monthly" | "annualy";
+
+/**
+ * Captures steps as a user moves through the subscription workflow on a media and
+ * publishing site. - Generated from a property rule
+ */
+export type SubscriptionWorkflowEnterSubscriptionFlow = {
+    /**
+     * The name of the step the user is currently on in the subscription workflow.
+     */
+    step_name: SubscriptionWorkflowEnterSubscriptionFlowStepName;
+    /**
+     * Additional information related to the current step.
+     */
+    value?: null | string;
+}
+
+/**
+ * The name of the step the user is currently on in the subscription workflow.
+ */
+export type SubscriptionWorkflowEnterSubscriptionFlowStepName = "begin_workflow";
+
+/**
+ * Captures user login attempts for demo purposes. - Generated from a property rule
+ */
+export type LoginLoginSuccess = {
+    /**
+     * Reason for login failure, if applicable.
+     */
+    failure_reason?: null | string;
+    /**
+     * The method used to attempt login.
+     */
+    login_method?: LoginMethod;
+    login_status?: LoginStatus;
+}
+
+/**
+ * The method used to attempt login.
+ */
+export type LoginMethod = "email" | "google" | "facebook" | "apple";
+
+export type LoginStatus = "success";
+
+/**
  * Creates a Snowplow Event Specification entity.
  */
 export function createEventSpecification(eventSpecification: EventSpecification){
@@ -395,6 +486,24 @@ export function createAd(ad: Ad){
     }
 }
 /**
+ * Track a Snowplow event for SubscriptionWorkflowConfirmPayment.
+ * Captures steps as a user moves through the subscription workflow on a media and publishing site. - Generated from a property rule
+ */
+function trackSubscriptionWorkflowConfirmPayment<T extends {} = any>(subscriptionWorkflowConfirmPayment: SubscriptionWorkflowConfirmPayment & ContextsOrTimestamp<T>, trackers?: string[]){
+    const { context, timestamp, ...data } = subscriptionWorkflowConfirmPayment;
+    const event: SelfDescribingJson = {
+        schema: 'iglu:com.demo.media/subscription_workflow/jsonschema/1-0-0',
+        data
+    };
+
+    trackSelfDescribingEvent({
+        event,
+        context,
+        timestamp,
+    }, trackers);
+}
+
+/**
  * Track a Snowplow event for ArticleInteractionArticleView.
  * Data structure for when a user interacts with an article - Generated from a property rule
  */
@@ -413,13 +522,13 @@ function trackArticleInteractionArticleView<T extends {} = any>(articleInteracti
 }
 
 /**
- * Track a Snowplow event for ConversionEventCreateAccount.
- * Tracks types of user conversions such as purchases, signups, downloads, etc. - Generated from a property rule
+ * Track a Snowplow event for SubscriptionWorkflowPersonalDetails.
+ * Captures steps as a user moves through the subscription workflow on a media and publishing site. - Generated from a property rule
  */
-function trackConversionEventCreateAccount<T extends {} = any>(conversionEventCreateAccount: ConversionEventCreateAccount & ContextsOrTimestamp<T>, trackers?: string[]){
-    const { context, timestamp, ...data } = conversionEventCreateAccount;
+function trackSubscriptionWorkflowPersonalDetails<T extends {} = any>(subscriptionWorkflowPersonalDetails: SubscriptionWorkflowPersonalDetails & ContextsOrTimestamp<T>, trackers?: string[]){
+    const { context, timestamp, ...data } = subscriptionWorkflowPersonalDetails;
     const event: SelfDescribingJson = {
-        schema: 'iglu:com.demo/conversion_event/jsonschema/1-0-0',
+        schema: 'iglu:com.demo.media/subscription_workflow/jsonschema/1-0-0',
         data
     };
 
@@ -538,7 +647,85 @@ export function createArticleFullSearch(articleFullSearch: ArticleFullSearch){
         data: articleFullSearch
     }
 }
+/**
+ * Track a Snowplow event for SubscriptionWorkflowSelectAPlan.
+ * Captures steps as a user moves through the subscription workflow on a media and publishing site. - Generated from a property rule
+ */
+function trackSubscriptionWorkflowSelectAPlan<T extends {} = any>(subscriptionWorkflowSelectAPlan: SubscriptionWorkflowSelectAPlan & ContextsOrTimestamp<T>, trackers?: string[]){
+    const { context, timestamp, ...data } = subscriptionWorkflowSelectAPlan;
+    const event: SelfDescribingJson = {
+        schema: 'iglu:com.demo.media/subscription_workflow/jsonschema/1-0-0',
+        data
+    };
 
+    trackSelfDescribingEvent({
+        event,
+        context,
+        timestamp,
+    }, trackers);
+}
+
+/**
+ * Track a Snowplow event for SubscriptionWorkflowEnterSubscriptionFlow.
+ * Captures steps as a user moves through the subscription workflow on a media and publishing site. - Generated from a property rule
+ */
+function trackSubscriptionWorkflowEnterSubscriptionFlow<T extends {} = any>(subscriptionWorkflowEnterSubscriptionFlow: SubscriptionWorkflowEnterSubscriptionFlow & ContextsOrTimestamp<T>, trackers?: string[]){
+    const { context, timestamp, ...data } = subscriptionWorkflowEnterSubscriptionFlow;
+    const event: SelfDescribingJson = {
+        schema: 'iglu:com.demo.media/subscription_workflow/jsonschema/1-0-0',
+        data
+    };
+
+    trackSelfDescribingEvent({
+        event,
+        context,
+        timestamp,
+    }, trackers);
+}
+
+/**
+ * Track a Snowplow event for LoginLoginSuccess.
+ * Captures user login attempts for demo purposes. - Generated from a property rule
+ */
+function trackLoginLoginSuccess<T extends {} = any>(loginLoginSuccess: LoginLoginSuccess & ContextsOrTimestamp<T>, trackers?: string[]){
+    const { context, timestamp, ...data } = loginLoginSuccess;
+    const event: SelfDescribingJson = {
+        schema: 'iglu:com.demo/login/jsonschema/1-0-0',
+        data
+    };
+
+    trackSelfDescribingEvent({
+        event,
+        context,
+        timestamp,
+    }, trackers);
+}
+
+
+/**
+ * Tracks a ConfirmPayment event specification.
+ * ID: 05f604ca-af39-4f32-8b81-d35ec7c17720
+ */
+export function trackConfirmPaymentSpec(confirmPayment: SubscriptionWorkflowConfirmPayment & ContextsOrTimestamp, trackers?: string[]){
+    const eventSpecificationContext: SelfDescribingJson<EventSpecification> = createEventSpecification({ 
+        id: '05f604ca-af39-4f32-8b81-d35ec7c17720',
+        name: 'Confirm Payment',
+        data_product_id: 'ead1f30f-1234-4350-a112-02003991e391',
+        data_product_name: 'Customer Acquisition',
+        data_product_domain: 'Marketing'
+    });
+
+    const context = Array.isArray(confirmPayment.context)
+        ? [...confirmPayment.context, eventSpecificationContext]
+        : [eventSpecificationContext];
+
+    const modifiedConfirmPayment = {
+        ...confirmPayment,
+        context,
+    };
+
+    trackSubscriptionWorkflowConfirmPayment<Record<string, unknown> | EventSpecification>(modifiedConfirmPayment, trackers);
+}
 /**
  * Tracks a ArticleView event specification.
  * ID: 207d6f27-a125-402a-b515-d40064d0f1c4
@@ -564,28 +751,28 @@ export function trackArticleViewSpec(articleView: ArticleInteractionArticleView 
     trackArticleInteractionArticleView<Article | EventSpecification>(modifiedArticleView, trackers);
 }
 /**
- * Tracks a CreateAccount event specification.
- * ID: 40ffc5df-9007-460b-8be1-79db97731299
+ * Tracks a PersonalDetails event specification.
+ * ID: 3962b139-d376-4ff3-9554-e78df3332676
  */
-export function trackCreateAccountSpec(createAccount: ConversionEventCreateAccount & ContextsOrTimestamp, trackers?: string[]){
+export function trackPersonalDetailsSpec(personalDetails: SubscriptionWorkflowPersonalDetails & ContextsOrTimestamp, trackers?: string[]){
     const eventSpecificationContext: SelfDescribingJson<EventSpecification> = createEventSpecification({ 
-        id: '40ffc5df-9007-460b-8be1-79db97731299',
-        name: 'Create Account',
+        id: '3962b139-d376-4ff3-9554-e78df3332676',
+        name: 'Personal Details',
         data_product_id: 'ead1f30f-1234-4350-a112-02003991e391',
         data_product_name: 'Customer Acquisition',
         data_product_domain: 'Marketing'
     });
 
-    const context = Array.isArray(createAccount.context)
-        ? [...createAccount.context, eventSpecificationContext]
+    const context = Array.isArray(personalDetails.context)
+        ? [...personalDetails.context, eventSpecificationContext]
         : [eventSpecificationContext];
 
-    const modifiedCreateAccount = {
-        ...createAccount,
+    const modifiedPersonalDetails = {
+        ...personalDetails,
         context,
     };
 
-    trackConversionEventCreateAccount<Record<string, unknown> | EventSpecification>(modifiedCreateAccount, trackers);
+    trackSubscriptionWorkflowPersonalDetails<Record<string, unknown> | EventSpecification>(modifiedPersonalDetails, trackers);
 }
 /**
  * Tracks a NewsletterSignup event specification.
@@ -706,6 +893,78 @@ export function trackFullSearchSpec(fullSearch: SearchPerformedFullSearch & Cont
     };
 
     trackSearchPerformedFullSearch<ArticleFullSearch | EventSpecification>(modifiedFullSearch, trackers);
+}
+/**
+ * Tracks a SelectAPlan event specification.
+ * ID: d30cf2d2-23ed-4faa-889b-bb776182d8ab
+ */
+export function trackSelectAPlanSpec(selectAPlan: SubscriptionWorkflowSelectAPlan & ContextsOrTimestamp, trackers?: string[]){
+    const eventSpecificationContext: SelfDescribingJson<EventSpecification> = createEventSpecification({ 
+        id: 'd30cf2d2-23ed-4faa-889b-bb776182d8ab',
+        name: 'Select a Plan',
+        data_product_id: 'ead1f30f-1234-4350-a112-02003991e391',
+        data_product_name: 'Customer Acquisition',
+        data_product_domain: 'Marketing'
+    });
+
+    const context = Array.isArray(selectAPlan.context)
+        ? [...selectAPlan.context, eventSpecificationContext]
+        : [eventSpecificationContext];
+
+    const modifiedSelectAPlan = {
+        ...selectAPlan,
+        context,
+    };
+
+    trackSubscriptionWorkflowSelectAPlan<Record<string, unknown> | EventSpecification>(modifiedSelectAPlan, trackers);
+}
+/**
+ * Tracks a EnterSubscriptionFlow event specification.
+ * ID: eca878e2-aa58-48d5-b3dd-86980ec2fc03
+ */
+export function trackEnterSubscriptionFlowSpec(enterSubscriptionFlow: SubscriptionWorkflowEnterSubscriptionFlow & ContextsOrTimestamp, trackers?: string[]){
+    const eventSpecificationContext: SelfDescribingJson<EventSpecification> = createEventSpecification({ 
+        id: 'eca878e2-aa58-48d5-b3dd-86980ec2fc03',
+        name: 'Enter Subscription Flow',
+        data_product_id: 'ead1f30f-1234-4350-a112-02003991e391',
+        data_product_name: 'Customer Acquisition',
+        data_product_domain: 'Marketing'
+    });
+
+    const context = Array.isArray(enterSubscriptionFlow.context)
+        ? [...enterSubscriptionFlow.context, eventSpecificationContext]
+        : [eventSpecificationContext];
+
+    const modifiedEnterSubscriptionFlow = {
+        ...enterSubscriptionFlow,
+        context,
+    };
+
+    trackSubscriptionWorkflowEnterSubscriptionFlow<Record<string, unknown> | EventSpecification>(modifiedEnterSubscriptionFlow, trackers);
+}
+/**
+ * Tracks a LoginSuccess event specification.
+ * ID: fbda2b20-8c46-4750-833b-bf9cbcaf165e
+ */
+export function trackLoginSuccessSpec(loginSuccess: LoginLoginSuccess & ContextsOrTimestamp, trackers?: string[]){
+    const eventSpecificationContext: SelfDescribingJson<EventSpecification> = createEventSpecification({ 
+        id: 'fbda2b20-8c46-4750-833b-bf9cbcaf165e',
+        name: 'Login Success',
+        data_product_id: 'ead1f30f-1234-4350-a112-02003991e391',
+        data_product_name: 'Customer Acquisition',
+        data_product_domain: 'Marketing'
+    });
+
+    const context = Array.isArray(loginSuccess.context)
+        ? [...loginSuccess.context, eventSpecificationContext]
+        : [eventSpecificationContext];
+
+    const modifiedLoginSuccess = {
+        ...loginSuccess,
+        context,
+    };
+
+    trackLoginLoginSuccess<Record<string, unknown> | EventSpecification>(modifiedLoginSuccess, trackers);
 }
 
 

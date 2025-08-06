@@ -10,14 +10,13 @@ This document provides comprehensive documentation of the architecture, componen
 - **TypeScript 5** - Type-safe JavaScript
 - **Tailwind CSS 3** - Utility-first CSS framework
 - **Lucide React** - Icon library
-- **Snowplow Analytics** - User tracking and analytics with Enhanced Consent Plugin
 
 ### Architectural Patterns
 - **Configuration-Driven Development** - All hardcoded values moved to `lib/config.ts`
 - **Component Composition** - Reusable layout and content components
 - **Centralized Data Layer** - Single source of truth for articles and configuration
 - **Type Safety** - Strict TypeScript with interfaces for all data structures
-- **Separation of Concerns** - Clear separation between tracking, consent management, and UI components
+- **Separation of Concerns** - Clear separation between UI components and business logic
 
 ## 📁 Project Structure
 
@@ -33,7 +32,6 @@ media-publishing-web-demo/
 │   ├── config.ts           # Centralized site configuration
 │   ├── data.ts             # Article data and access functions
 │   ├── recommendations.ts  # Recommendation logic
-│   ├── snowplow.ts         # Snowplow tracking and Enhanced Consent Plugin
 │   ├── consent.ts          # Consent management utilities
 │   ├── utils.ts            # Utility functions
 │   └── design-system.ts    # Design tokens and constants
@@ -152,7 +150,6 @@ PageLayout
   - Manual activation via footer button or floating settings button
   - Granular cookie preference controls
   - Persistent settings storage
-  - Snowplow Enhanced Consent Plugin integration
   - Floating settings button for later access
   - Global availability across all pages
 - **Cookie Categories**:
@@ -164,7 +161,6 @@ PageLayout
   - Available globally via PageLayout component
   - Footer "Manage Consent" button dispatches custom event
   - Floating settings button in bottom-right corner
-  - Tracks consent events using Snowplow Enhanced Consent Plugin
 - **Storage**: Uses localStorage for persistence across sessions via `lib/consent.ts`
 - **Styling**: Modal overlay with responsive design, matches site aesthetic
 
@@ -295,79 +291,6 @@ layout: {
 - **Search**: useState for search queries
 - **Consent**: useState for consent preferences and modal states
 
-## 📈 Analytics & Tracking
-
-### Snowplow Integration
-- **Setup**: `lib/snowplow.ts` - Core tracking and Enhanced Consent Plugin
-- **Provider**: `app/components/snowplow-provider.tsx`
-- **Hook**: `app/hooks/use-snowplow-tracking.ts`
-- **Events**: page_view, consent events
-
-### Consent Management Architecture
-
-#### File Structure
-- **`lib/consent.ts`**: Consent utilities and state management
-- **`lib/snowplow.ts`**: Snowplow tracking and Enhanced Consent Plugin integration
-- **`app/components/consent-manager.tsx`**: UI component for consent management
-- **`types/global.d.ts`**: Global TypeScript declarations for Snowplow
-
-#### Consent Utilities (`lib/consent.ts`)
-```typescript
-// Core consent interface
-interface ConsentPreferences {
-  necessary: boolean
-  analytics: boolean
-  marketing: boolean
-  preferences: boolean
-}
-
-// Utility functions
-hasAnalyticsConsent(): boolean
-hasMarketingConsent(): boolean
-getConsentPreferences(): ConsentPreferences | null
-saveConsentPreferences(preferences: ConsentPreferences): void
-hasConsentBeenGiven(): boolean
-clearConsentData(): void
-```
-
-#### Snowplow Enhanced Consent Plugin (`lib/snowplow.ts`)
-```typescript
-// Consent event tracking functions
-trackConsentAllowEvent(consentScopes: string[])
-trackConsentDenyEvent(consentScopes: string[])
-trackConsentSelectedEvent(consentScopes: string[])
-trackConsentWithdrawnEvent(consentScopes: string[])
-trackCmpVisibleEvent()
-```
-
-#### Consent Event Tracking
-- **Schema**: Uses Snowplow's official Enhanced Consent Plugin schemas
-- **Events**: 
-  - `consent_allow` - When user accepts all cookies
-  - `consent_deny` - When user rejects non-necessary cookies
-  - `consent_selected` - When user saves custom preferences
-  - `consent_withdrawn` - When user withdraws consent
-  - `cmp_visible` - When consent banner becomes visible
-- **Data**: Includes consent scopes, basis for processing, consent URL, version, domains, and GDPR applicability
-
-### Consent-Aware Tracking Pattern
-```typescript
-// ✅ Good - Checking consent before tracking
-import { hasAnalyticsConsent } from '@/lib/consent'
-
-const handleUserAction = () => {
-  if (hasAnalyticsConsent()) {
-    // Track user action
-    trackSelfDescribingEvent({
-      event: {
-        schema: 'iglu:com.example/event/jsonschema/1-0-0',
-        data: { action: 'user_clicked_button' }
-      }
-    })
-  }
-}
-```
-
 ## 💻 Development Patterns & Conventions
 
 ### File Naming
@@ -400,7 +323,6 @@ const handleUserAction = () => {
 - **layout**: `app/components/page-layout.tsx` - Page structure with global consent manager
 - **sidebar**: `app/components/sidebar.tsx` - Sidebar composition
 - **consent**: `lib/consent.ts` - Consent utilities and state management
-- **snowplow**: `lib/snowplow.ts` - Snowplow tracking and Enhanced Consent Plugin
 - **consent-manager**: `app/components/consent-manager.tsx` - Consent management UI
 
 ### Common Patterns to Follow
@@ -415,7 +337,6 @@ const handleUserAction = () => {
 - **Duplication**: Don't duplicate layout code, use existing components
 - **Direct Data Access**: Don't import articles directly, use data functions
 - **Inconsistent Styling**: Don't create new color schemes, use existing tokens
-- **Tracking Without Consent**: Don't track user behavior without proper consent
 - **Mixed Concerns**: Don't mix consent utilities with tracking functions
 
 ### Useful Context for Modifications
@@ -424,7 +345,6 @@ const handleUserAction = () => {
 - **Modify Layout**: Update PageLayout or MainContentLayout components
 - **Change Styling**: Update design tokens in this file or component styles
 - **Add New Feature**: Check if it should be configurable in siteConfig
-- **Add Tracking**: Ensure consent is checked before implementing new tracking
 - **Consent Management**: Use utilities from `lib/consent.ts` for consent checks
 
 ## ⚡ Performance & Optimization
@@ -447,13 +367,11 @@ const handleUserAction = () => {
 ## 🚀 Deployment & Environment
 
 ### Environment Variables
-- **SNOWPLOW_ENDPOINT**: Snowplow analytics endpoint
 - **NEXT_PUBLIC_SITE_URL**: Public site URL for analytics
 
 ### Build Process
 - **Static Export**: `next build && next export`
 - **Optimization**: Image optimization, code splitting
-- **Analytics**: Snowplow tracking enabled in production
 
 ## 📝 Best Practices
 
@@ -466,9 +384,8 @@ const handleUserAction = () => {
 - Follow the established component hierarchy
 - Use configuration-driven development
 - Maintain type safety with TypeScript
-- Check consent before tracking user behavior using `lib/consent.ts`
 - Use consent utility functions for conditional tracking
-- Separate concerns: tracking in `lib/snowplow.ts`, consent in `lib/consent.ts`
+- Separate concerns: consent in `lib/consent.ts`
 
 ### ❌ Don'ts
 - Don't use hardcoded hex colors (`#9e62dd`) - use CSS custom properties instead
@@ -479,8 +396,6 @@ const handleUserAction = () => {
 - Don't duplicate layout code - use existing components
 - Don't import articles directly - use data functions
 - Don't create new color schemes - use existing tokens
-- Don't track user behavior without checking consent first
-- Don't bypass consent management for analytics
 - Don't mix consent utilities with tracking functions
 
 ## 🔍 Component Examples
@@ -532,54 +447,6 @@ export default function NewPage() {
 }
 ```
 
-### Consent-Aware Tracking
-```tsx
-// ✅ Good - Checking consent before tracking
-import { hasAnalyticsConsent } from '@/lib/consent'
-
-const handleUserAction = () => {
-  if (hasAnalyticsConsent()) {
-    // Track user action
-    trackSelfDescribingEvent({
-      event: {
-        schema: 'iglu:com.example/event/jsonschema/1-0-0',
-        data: { action: 'user_clicked_button' }
-      }
-    })
-  }
-}
-
-// ❌ Bad - Tracking without consent check
-const handleUserAction = () => {
-  // Always track regardless of consent
-  trackSelfDescribingEvent({
-    event: {
-      schema: 'iglu:com.example/event/jsonschema/1-0-0',
-      data: { action: 'user_clicked_button' }
-    }
-  })
-}
-```
-
-### Consent Management Integration
-```tsx
-// ✅ Good - Using consent utilities
-import { getConsentPreferences, saveConsentPreferences } from '@/lib/consent'
-import { trackConsentAllowEvent } from '@/lib/snowplow'
-
-const handleAcceptAll = () => {
-  const preferences = {
-    necessary: true,
-    analytics: true,
-    marketing: true,
-    preferences: true
-  }
-  
-  saveConsentPreferences(preferences)
-  trackConsentAllowEvent(['necessary', 'analytics', 'marketing', 'preferences'])
-}
-```
-
 ## 📚 Additional Resources
 
 - [Next.js Documentation](https://nextjs.org/docs)
@@ -589,7 +456,6 @@ const handleAcceptAll = () => {
 - [CSS Custom Properties Guide](https://developer.mozilla.org/en-US/docs/Web/CSS/Using_CSS_custom_properties)
 - [Design Tokens Best Practices](https://www.designtokens.org/) 
 - [GDPR Compliance Guide](https://gdpr.eu/)
-- [Snowplow Enhanced Consent Plugin](https://docs.snowplow.io/docs/sources/trackers/web-trackers/tracking-events/consent-gdpr/)
 
 ### Feature Flags (`lib/config.ts`)
 - `search`: Enables search functionality
@@ -600,6 +466,4 @@ const handleAcceptAll = () => {
 ### Consent Management Files
 - `app/components/consent-manager.tsx`: Main consent management UI component
 - `lib/consent.ts`: Consent utilities and state management
-- `lib/snowplow.ts`: Snowplow tracking and Enhanced Consent Plugin integration
-- `types/global.d.ts`: Global TypeScript declarations for Snowplow
 - `app/components/page-layout.tsx`: Global integration point for consent manager 

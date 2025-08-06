@@ -6,9 +6,9 @@ import { useState, useEffect, useRef } from "react"
 import { Search, Clock } from "lucide-react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { allArticles } from "@/lib/data"
-import { getCategoryColor } from "@/lib/utils"
-import { trackQuickSearch } from "@/lib/snowplow-tracking"
+import { allArticles } from "@/src/lib/data"
+import { getCategoryColor } from "@/src/lib/utils"
+import { trackQuickSearch } from "@/src/lib/business-events"
 
 export default function SearchDropdown() {
   const [isOpen, setIsOpen] = useState(false)

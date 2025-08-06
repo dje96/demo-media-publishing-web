@@ -191,16 +191,15 @@ export const siteConfig: SiteConfig = {
   
   navigation: {
     mainMenu: [
-      { name: "Home", href: "/", icon: "Home", description: "Latest news and insights" },
-      { name: "Business", href: "/business", icon: "Building2", description: "Business trends and analysis" },
-      { name: "Technology", href: "/technology", icon: "Cpu", description: "Tech industry updates" },
-      { name: "AI", href: "/ai", icon: "Brain", description: "Artificial intelligence coverage" }
+      { name: "Business", href: "/category/business", icon: "Building2", description: "Business trends and analysis" },
+      { name: "Technology", href: "/category/technology", icon: "Cpu", description: "Tech industry updates" },
+      { name: "AI", href: "/category/ai", icon: "Brain", description: "Artificial intelligence coverage" }
     ],
     footerLinks: [
       { name: "Home", href: "/", category: "company" },
-      { name: "Business", href: "/business", category: "company" },
-      { name: "Technology", href: "/technology", category: "company" },
-      { name: "AI", href: "/ai", category: "company" },
+      { name: "Business", href: "/category/business", category: "company" },
+      { name: "Technology", href: "/category/technology", category: "company" },
+      { name: "AI", href: "/category/ai", category: "company" },
       { name: "Contact", href: "/contact", category: "support" },
       { name: "Advertiser Redirect", href: "/advertiser-redirect", category: "support" },
       { name: "Privacy Policy", href: "https://snowplow.io/privacy-policy/", category: "legal" },

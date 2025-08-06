@@ -2,18 +2,17 @@
 
 import { useState, useEffect } from "react"
 import { X, Settings, Shield, Target, Cookie, BarChart3 } from "lucide-react"
-import { siteConfig } from "@/lib/config"
 import { 
   trackConsentAllowEvent, 
   trackConsentDenyEvent, 
   trackConsentSelectedEvent,
   trackCmpVisibleEvent 
-} from "@/lib/snowplow"
+} from "@/src/lib/snowplow"
 import { 
   ConsentPreferences, 
   getConsentPreferences, 
   saveConsentPreferences 
-} from "@/lib/consent"
+} from "@/src/lib/consent"
 
 export default function ConsentManager() {
   const [showConsent, setShowConsent] = useState(false)
@@ -85,13 +84,9 @@ export default function ConsentManager() {
     
     // Track consent selected event with current preferences
     const consentScopes = Object.entries(preferences)
-      .filter(([_, value]) => value)
-      .map(([key, _]) => key)
+      .filter(([, value]) => value)
+      .map(([key]) => key)
     trackConsentSelectedEvent(consentScopes)
-  }
-
-  const saveConsent = (consentPrefs: ConsentPreferences) => {
-    saveConsentPreferences(consentPrefs)
   }
 
   const handlePreferenceChange = (key: keyof ConsentPreferences, value: boolean) => {
@@ -137,7 +132,7 @@ export default function ConsentManager() {
               <>
                 <p className="text-gray-600 mb-6">
                   We use cookies and similar technologies to provide, protect, and improve our services. 
-                  By clicking "Accept All", you consent to our use of cookies for analytics, marketing, and preferences.
+                  By clicking &quot;Accept All&quot;, you consent to our use of cookies for analytics, marketing, and preferences.
                 </p>
                 
                 <div className="space-y-4 mb-6">

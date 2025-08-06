@@ -22,11 +22,9 @@ import {
 
   // Initialize Snowplow tracker
 export function initializeSnowplow() {
-  // https://collector-sales-aws.snowplow.io - Sales AWS collector
-  // http://localhost:9090 - Local Micro collector
-  newTracker('sp1', 'https://collector-sales-aws.snowplow.io', {
-    appId: 'media-publishing-web-dev',
-    appVersion: '0.1.0',
+  newTracker('sp1', 'http://localhost:9090', {
+    appId: 'demo-media-publishing-web',
+    appVersion: '1.0.0',
     cookieSameSite: 'Lax',
     eventMethod: 'post',
     bufferSize: 1,

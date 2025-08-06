@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { Mail, X } from "lucide-react"
-import { trackNewsletterSignup } from "@/lib/snowplow-tracking"
+import { trackNewsletterSignup } from "@/src/lib/business-events"
 
 export default function NewsletterSignup() {
   const [email, setEmail] = useState("")

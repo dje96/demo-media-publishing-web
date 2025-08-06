@@ -1,14 +1,14 @@
 "use client"
 
-import { useState } from "react"
+import React, { useState } from "react"
 import { Check, CreditCard, User, Calendar } from "lucide-react"
-import PageLayout from "../components/page-layout"
-import MainContentLayout from "../components/main-content-layout"
-import PageHeader from "../components/page-header"
-import { trackCreateAccount } from "@/lib/snowplow-tracking"
-import { siteConfig } from "@/lib/config"
+import PageLayout from "@/src/components/page-layout"
+import MainContentLayout from "@/src/components/main-content-layout"
+import PageHeader from "@/src/components/page-header"
+import { trackConfirmPayment, trackSelectPlan, trackPersonalDetails, trackEnterSubscriptionFlow } from "@/src/lib/business-events"
+import { siteConfig } from "@/src/lib/config"
 import { useRouter } from "next/navigation"
-import { useUser } from "../contexts/user-context"
+import { useUser } from "@/src/contexts/user-context"
 
 type PlanType = "annual" | "monthly"
 type SubscriptionStep = "plan" | "details" | "payment"
@@ -34,6 +34,15 @@ export default function SubscribePage() {
   })
   const router = useRouter();
   const { login } = useUser();
+  const hasTrackedEnterFlow = React.useRef(false);
+
+  // Track when user enters subscription flow (only once)
+  React.useEffect(() => {
+    if (!hasTrackedEnterFlow.current) {
+      trackEnterSubscriptionFlow()
+      hasTrackedEnterFlow.current = true
+    }
+  }, [])
 
   const plans = [
     {
@@ -62,18 +71,20 @@ export default function SubscribePage() {
 
   const handlePlanSelect = (plan: PlanType) => {
     setSubscriptionData(prev => ({ ...prev, plan }))
+    trackSelectPlan(plan === 'annual' ? 'annualy' : 'monthly')
     setCurrentStep("details")
   }
 
   const handleDetailsSubmit = (e: React.FormEvent) => {
     e.preventDefault()
+    trackPersonalDetails()
     setCurrentStep("payment")
   }
 
   const handlePaymentSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     // Track subscription completion
-    trackCreateAccount()
+    trackConfirmPayment()
     // Log in the user and redirect to homepage
     login(subscriptionData.email)
     localStorage.setItem('showSubscriptionThankYou', 'true')

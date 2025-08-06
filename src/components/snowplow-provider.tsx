@@ -1,8 +1,8 @@
 'use client';
 
 import { useEffect } from 'react';
-import { initializeSnowplowOnly, enableCrossDomainLinking } from '@/lib/snowplow';
-import { useSnowplowTracking } from '@/app/hooks/use-snowplow-tracking';
+import { initializeSnowplowOnly, enableCrossDomainLinking } from '@/src/lib/snowplow-config';
+import { useSnowplowTracking } from '@/src/hooks/use-snowplow-tracking';
 
 interface SnowplowProviderProps {
   children: React.ReactNode;

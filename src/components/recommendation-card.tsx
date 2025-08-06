@@ -1,6 +1,6 @@
 import Link from "next/link"
 import { Clock } from "lucide-react"
-import { getCategoryColor } from "@/lib/utils"
+import { getCategoryColor } from "@/src/lib/utils"
 
 interface Recommendation {
   id: string

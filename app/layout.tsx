@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import "./globals.css";
-import { UserProvider } from "./contexts/user-context";
-import SnowplowProvider from "./components/snowplow-provider";
-import { siteConfig } from "@/lib/config";
+import "@/src/styles/globals.css";
+import { UserProvider } from "@/src/contexts/user-context";
+import SnowplowProvider from "@/src/components/snowplow-provider";
+import { siteConfig } from "@/src/lib/config";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",

@@ -1,13 +1,13 @@
 "use client"
 
 import { useEffect, useRef } from "react"
-import PageLayout from "../../components/page-layout"
-import MainContentLayout from "../../components/main-content-layout"
-import Sidebar from "../../components/sidebar"
+import PageLayout from "@/src/components/page-layout"
+import MainContentLayout from "@/src/components/main-content-layout"
+import Sidebar from "@/src/components/sidebar"
 import { Clock, User, Calendar } from "lucide-react"
-import { formatDate } from "@/lib/utils"
+import { formatDate } from "@/src/lib/utils"
 import Image from "next/image"
-import { trackArticleView } from "@/lib/snowplow-tracking"
+import { trackArticleView } from "@/src/lib/business-events"
 
 interface Article {
   id: string

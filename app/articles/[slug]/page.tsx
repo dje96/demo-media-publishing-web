@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation"
-import { getArticleBySlug } from "@/lib/data"
+import { getArticleBySlug } from "@/src/lib/data"
 import ArticlePageClient from "./article-page-client"
 
 interface PageProps {

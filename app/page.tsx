@@ -1,15 +1,14 @@
 "use client"
 
-import type { Metadata } from "next";
-import PageLayout from "./components/page-layout"
-import MainContentLayout from "./components/main-content-layout"
-import PageHeader from "./components/page-header"
-import ArticleGrid from "./components/article-grid"
+import PageLayout from "@/src/components/page-layout"
+import MainContentLayout from "@/src/components/main-content-layout"
+import PageHeader from "@/src/components/page-header"
+import ArticleGrid from "@/src/components/article-grid"
 import Link from "next/link"
 import Image from "next/image"
-import { articles } from "@/lib/data"
-import { siteConfig } from "@/lib/config"
-import { formatDateShort } from "@/lib/utils"
+import { articles } from "@/src/lib/data"
+import { siteConfig } from "@/src/lib/config"
+import { formatDateShort } from "@/src/lib/utils"
 import { useEffect, useState } from "react"
 
 // Convert articles object to array and get the first 4 articles

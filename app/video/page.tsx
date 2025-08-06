@@ -5,7 +5,7 @@ import { ArrowLeft } from "lucide-react"
 import { useRouter } from "next/navigation"
 import {
   initializeVideoTracking
-} from "@/lib/snowplow"
+} from "@/src/lib/snowplow"
 import { startMediaTracking, trackMediaPlay, trackMediaPause, trackMediaEnd, trackMediaVolumeChange, trackMediaFullscreenChange, trackMediaSeekStart, trackMediaSeekEnd, updateMediaTracking } from '@snowplow/browser-plugin-media'
 
 const VIDEO_ID = "customer_data_infra_demo"
@@ -160,10 +160,9 @@ export default function VideoPage() {
         {/* Video Description */}
         <div className="mt-8 bg-white rounded-lg shadow-lg p-6">
           <h2 className="text-xl font-semibold text-gray-900 mb-4">About This Video</h2>
-          <p className="text-gray-600 leading-relaxed">
-            Learn about Snowplow's customer data infrastructure and how it enables organizations 
-            to collect, process, and analyze customer data at scale. This demo showcases the 
-            key features and capabilities of our platform for building robust data pipelines.
+          <p className="text-gray-600 mb-4">
+            Watch our latest video content and track your viewing behavior. 
+            We&apos;ll analyze your preferences to provide better recommendations.
           </p>
         </div>
       </div>

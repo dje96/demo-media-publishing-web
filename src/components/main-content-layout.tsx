@@ -1,6 +1,6 @@
 import Sidebar from "./sidebar"
 import Advertisement from "./advertisement"
-import { siteConfig } from "@/lib/config"
+import { siteConfig } from "@/src/lib/config"
 
 interface MainContentLayoutProps {
   children: React.ReactNode

@@ -1,6 +1,6 @@
 import Link from "next/link"
 import { Clock, User } from "lucide-react"
-import { getCategoryColor, formatDateShort } from "@/lib/utils"
+import { getCategoryColor, formatDateShort } from "@/src/lib/utils"
 import Image from "next/image"
 
 interface Article {

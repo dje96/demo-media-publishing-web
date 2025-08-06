@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from 'react';
 import { usePathname } from 'next/navigation';
-import { trackPageViewEvent } from '@/lib/snowplow';
+import { trackPageViewEvent } from '@/src/lib/snowplow-config';
 
 export function useSnowplowTracking() {
   const pathname = usePathname();

@@ -1,11 +1,11 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import PageLayout from "../components/page-layout"
-import MainContentLayout from "../components/main-content-layout"
-import PageHeader from "../components/page-header"
+import PageLayout from "@/src/components/page-layout"
+import MainContentLayout from "@/src/components/main-content-layout"
+import PageHeader from "@/src/components/page-header"
 import Link from "next/link"
-import { siteConfig } from "@/lib/config"
+import { siteConfig } from "@/src/lib/config"
 
 export default function AdvertiserRedirectPage() {
   const [countdown, setCountdown] = useState(10)

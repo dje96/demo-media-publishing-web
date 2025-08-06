@@ -1,13 +1,13 @@
 "use client"
 
 import { useEffect, useState, useRef } from "react"
-import PageLayout from "../components/page-layout"
-import MainContentLayout from "../components/main-content-layout"
-import PageHeader from "../components/page-header"
-import ArticleGrid from "../components/article-grid"
+import PageLayout from "@/src/components/page-layout"
+import MainContentLayout from "@/src/components/main-content-layout"
+import PageHeader from "@/src/components/page-header"
+import ArticleGrid from "@/src/components/article-grid"
 import { Search } from "lucide-react"
-import { searchArticles } from "@/lib/data"
-import { trackFullSearch } from "@/lib/snowplow-tracking"
+import { searchArticles } from "@/src/lib/data"
+import { trackFullSearch } from "@/src/lib/business-events"
 
 interface SearchPageClientProps {
   query: string

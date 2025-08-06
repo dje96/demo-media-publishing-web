@@ -2,8 +2,8 @@
 
 import { FormInputIcon, Phone, MapPin, RefreshCw, Shield, Play } from "lucide-react"
 import { useRouter } from "next/navigation"
-import { siteConfig, getRandomUtmParameters } from "@/lib/config"
-import { buildUrlWithUtm } from "@/lib/utils"
+import { siteConfig, getRandomUtmParameters } from "@/src/lib/config"
+import { buildUrlWithUtm } from "@/src/lib/utils"
 
 export default function Footer() {
   const router = useRouter()

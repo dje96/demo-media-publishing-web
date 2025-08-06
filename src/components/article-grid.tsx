@@ -1,5 +1,5 @@
 import ArticleCard from "./article-card"
-import { Article } from "@/lib/config"
+import { Article } from "@/src/lib/config"
 
 interface ArticleGridProps {
   articles: Article[]

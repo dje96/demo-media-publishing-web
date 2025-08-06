@@ -3,12 +3,12 @@
 // Note: This is a client component, so metadata is handled in the layout
 // The title will be "Contact | Media Publishing Demo" from the layout
 
-import PageLayout from "../components/page-layout"
-import PageHeader from "../components/page-header"
-import FormInput from "../components/form-input"
-import FormTextarea from "../components/form-textarea"
+import PageLayout from "@/src/components/page-layout"
+import PageHeader from "@/src/components/page-header"
+import FormInput from "@/src/components/form-input"
+import FormTextarea from "@/src/components/form-textarea"
 import { Mail, Phone, MapPin, Clock } from "lucide-react"
-import { siteConfig } from "@/lib/config"
+import { siteConfig } from "@/src/lib/config"
 
 export default function ContactPage() {
   return (

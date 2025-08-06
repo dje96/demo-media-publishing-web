@@ -3,18 +3,21 @@ import {
   trackQuickSearchSpec,
   trackFullSearchSpec,
   trackNewsletterSignupSpec,
-  trackCreateAccountSpec,
   trackAdClickSpec,
   trackAdImpressionSpec,
+  trackLoginSuccessSpec,
+  trackEnterSubscriptionFlowSpec,
+  trackConfirmPaymentSpec,
+  trackSelectAPlanSpec,
+  trackPersonalDetailsSpec,
   createArticle,
   createAd,
-  createAbTest,
   type Article,
   type Ad,
-  type AbTest,
   type ArticleQuickSearch,
-  type ArticleFullSearch
-} from '../snowtype/snowplow';
+  type ArticleFullSearch,
+  createAbTest
+} from '../../snowtype/snowplow';
 
 // Article View Tracking
 export function trackArticleView(articleData: {
@@ -140,19 +143,7 @@ export function trackNewsletterSignup(abTestData?: {
   }
 }
 
-// Create Account Tracking
-export function trackCreateAccount() {
-  console.log('Tracking create account');
-  
-  try {
-    trackCreateAccountSpec({
-      conversion_type: 'signup'
-    });
-    console.log('Create account tracking successful');
-  } catch (error) {
-    console.error('Error tracking create account:', error);
-  }
-}
+
 
 // Ad Click Tracking
 export function trackAdClick(adData: {
@@ -225,5 +216,77 @@ export function trackAdImpression(adData: {
     console.log('Ad impression tracking successful');
   } catch (error) {
     console.error('Error tracking ad impression:', error);
+  }
+} 
+
+// Login Success Tracking
+export function trackLoginSuccess(loginMethod?: 'email' | 'google' | 'facebook' | 'apple') {
+  console.log('Tracking login success');
+  
+  try {
+    trackLoginSuccessSpec({
+      login_status: 'success',
+      login_method: loginMethod
+    });
+    console.log('Login success tracking successful');
+  } catch (error) {
+    console.error('Error tracking login success:', error);
+  }
+}
+
+// Enter Subscription Flow Tracking
+export function trackEnterSubscriptionFlow() {
+  console.log('Tracking enter subscription flow');
+  
+  try {
+    trackEnterSubscriptionFlowSpec({
+      step_name: 'begin_workflow'
+    });
+    console.log('Enter subscription flow tracking successful');
+  } catch (error) {
+    console.error('Error tracking enter subscription flow:', error);
+  }
+}
+
+// Confirm Payment Tracking
+export function trackConfirmPayment() {
+  console.log('Tracking confirm payment');
+  
+  try {
+    trackConfirmPaymentSpec({
+      step_name: 'confirm_payment'
+    });
+    console.log('Confirm payment tracking successful');
+  } catch (error) {
+    console.error('Error tracking confirm payment:', error);
+  }
+}
+
+// Select a Plan Tracking
+export function trackSelectPlan(planType: 'monthly' | 'annualy') {
+  console.log('Tracking select plan:', planType);
+  
+  try {
+    trackSelectAPlanSpec({
+      step_name: 'select_plan',
+      value: planType
+    });
+    console.log('Select plan tracking successful');
+  } catch (error) {
+    console.error('Error tracking select plan:', error);
+  }
+}
+
+// Personal Details Tracking
+export function trackPersonalDetails() {
+  console.log('Tracking personal details');
+  
+  try {
+    trackPersonalDetailsSpec({
+      step_name: 'personal_details'
+    });
+    console.log('Personal details tracking successful');
+  } catch (error) {
+    console.error('Error tracking personal details:', error);
   }
 } 
