@@ -1,7 +1,7 @@
 "use client"
 
 import { createContext, useContext, useState, useEffect, ReactNode } from "react"
-import { setUserForTracking, clearUserForTracking } from "@/src/lib/snowplow"
+import { setUserForTracking, clearUserForTracking } from "@/src/lib/snowplow-config"
 
 interface User {
   email: string

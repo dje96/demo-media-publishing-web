@@ -7,7 +7,7 @@ import {
   trackConsentDenyEvent, 
   trackConsentSelectedEvent,
   trackCmpVisibleEvent 
-} from "@/src/lib/snowplow"
+} from "@/src/lib/snowplow-config"
 import { 
   ConsentPreferences, 
   getConsentPreferences, 

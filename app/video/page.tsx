@@ -5,7 +5,7 @@ import { ArrowLeft } from "lucide-react"
 import { useRouter } from "next/navigation"
 import {
   initializeVideoTracking
-} from "@/src/lib/snowplow"
+} from "@/src/lib/snowplow-config"
 import { startMediaTracking, trackMediaPlay, trackMediaPause, trackMediaEnd, trackMediaVolumeChange, trackMediaFullscreenChange, trackMediaSeekStart, trackMediaSeekEnd, updateMediaTracking } from '@snowplow/browser-plugin-media'
 
 const VIDEO_ID = "customer_data_infra_demo"
