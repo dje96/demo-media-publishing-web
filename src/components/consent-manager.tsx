@@ -2,11 +2,13 @@
 
 import { useState, useEffect } from "react"
 import { X, Settings, Shield, Target, Cookie, BarChart3 } from "lucide-react"
-import { 
-  trackConsentAllowEvent, 
-  trackConsentDenyEvent, 
+import {
+  trackConsentAllowEvent,
+  trackConsentDenyEvent,
   trackConsentSelectedEvent,
-  trackCmpVisibleEvent 
+  trackCmpVisibleEvent,
+  enableAnonymousTrackingMode,
+  disableAnonymousTrackingMode
 } from "@/src/lib/snowplow-config"
 import { 
   ConsentPreferences, 
@@ -57,7 +59,10 @@ export default function ConsentManager() {
     setPreferences(allAccepted)
     saveConsentPreferences(allAccepted)
     setShowConsent(false)
-    
+
+    // Disable anonymous tracking since analytics consent is given
+    disableAnonymousTrackingMode()
+
     // Track consent allow event
     trackConsentAllowEvent(["necessary", "analytics", "marketing", "preferences"])
   }
@@ -72,7 +77,10 @@ export default function ConsentManager() {
     setPreferences(minimalConsent)
     saveConsentPreferences(minimalConsent)
     setShowConsent(false)
-    
+
+    // Enable anonymous tracking since no analytics consent is given
+    enableAnonymousTrackingMode()
+
     // Track consent deny event
     trackConsentDenyEvent(["necessary"])
   }
@@ -81,7 +89,14 @@ export default function ConsentManager() {
     saveConsentPreferences(preferences)
     setShowConsent(false)
     setShowSettings(false)
-    
+
+    // Enable/disable anonymous tracking based on analytics consent
+    if (preferences.analytics) {
+      disableAnonymousTrackingMode()
+    } else {
+      enableAnonymousTrackingMode()
+    }
+
     // Track consent selected event with current preferences
     const consentScopes = Object.entries(preferences)
       .filter(([, value]) => value)

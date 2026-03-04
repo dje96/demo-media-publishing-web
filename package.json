@@ -15,6 +15,8 @@
     "@snowplow/browser-plugin-media": "^4.6.5",
     "@snowplow/browser-plugin-web-vitals": "^4.6.3",
     "@snowplow/browser-tracker": "^4.6.3",
+    "@snowplow/signals-browser-plugin": "^0.2.1",
+    "@snowplow/signals-node": "^0.2.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "lucide-react": "^0.522.0",

@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { X, Mail } from "lucide-react"
-import { trackLoginSuccess } from "@/src/lib/business-events"
+import { trackSelfDescribingEvent } from "@snowplow/browser-tracker"
 
 interface LoginModalProps {
   isOpen: boolean
@@ -23,10 +23,17 @@ export default function LoginModal({ isOpen, onClose, onLogin }: LoginModalProps
     setIsLoading(true)
     // Simulate API call
     await new Promise(resolve => setTimeout(resolve, 1000))
-    
+
     // Track login success
-    trackLoginSuccess('email');
-    
+    trackSelfDescribingEvent({
+      event: {
+        schema: 'iglu:com.demo/login/jsonschema/1-0-0',
+        data: {
+          login_method: 'email',
+          login_status: 'error'        }
+      }
+    });
+
     onLogin(email.trim())
     setIsLoading(false)
     setEmail("")

@@ -337,7 +337,7 @@ export type SubscriptionWorkflowSelectAPlanStepName = "select_plan";
 /**
  * Whether the user selects a monthly or annual plan
  */
-export type Value = "monthly" | "annualy";
+export type Value = "monthly" | "annually";
 
 /**
  * Captures steps as a user moves through the subscription workflow on a media and

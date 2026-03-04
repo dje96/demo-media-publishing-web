@@ -97,4 +97,36 @@ export function clearConsentData(): void {
   localStorage.removeItem("consent-given")
   localStorage.removeItem("consent-preferences")
   localStorage.removeItem("consent-date")
+}
+
+/**
+ * Check if Signals personalization is enabled
+ */
+export function isSignalsEnabled(): boolean {
+  if (typeof window === 'undefined') return true // Default to enabled on server
+  
+  const signalsPreference = localStorage.getItem("signals-enabled")
+  // Default to enabled if not set
+  return signalsPreference === null || signalsPreference === "true"
+}
+
+/**
+ * Set Signals personalization preference
+ */
+export function setSignalsEnabled(enabled: boolean): void {
+  if (typeof window === 'undefined') return
+
+  localStorage.setItem("signals-enabled", enabled.toString())
+
+  // Clear paywall intervention when signals is disabled
+  if (!enabled) {
+    sessionStorage.removeItem('paywall-intervention')
+    // Dispatch event to clear paywall
+    window.dispatchEvent(new CustomEvent('paywallInterventionCleared'))
+  }
+
+  // Dispatch event to notify components of the change
+  window.dispatchEvent(new CustomEvent('signalsPreferenceChanged', {
+    detail: { enabled }
+  }))
 } 

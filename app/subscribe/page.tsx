@@ -9,6 +9,7 @@ import { trackConfirmPayment, trackSelectPlan, trackPersonalDetails, trackEnterS
 import { siteConfig } from "@/src/lib/config"
 import { useRouter } from "next/navigation"
 import { useUser } from "@/src/contexts/user-context"
+import LoginModal from "@/src/components/login-modal"
 
 type PlanType = "annual" | "monthly"
 type SubscriptionStep = "plan" | "details" | "payment"
@@ -32,6 +33,7 @@ export default function SubscribePage() {
     cvv: "123",
     expiry: "12/25"
   })
+  const [showLoginModal, setShowLoginModal] = useState(false)
   const router = useRouter();
   const { login } = useUser();
   const hasTrackedEnterFlow = React.useRef(false);
@@ -71,7 +73,7 @@ export default function SubscribePage() {
 
   const handlePlanSelect = (plan: PlanType) => {
     setSubscriptionData(prev => ({ ...prev, plan }))
-    trackSelectPlan(plan === 'annual' ? 'annualy' : 'monthly')
+    trackSelectPlan(plan === 'annual' ? 'annually' : 'monthly')
     setCurrentStep("details")
   }
 
@@ -91,11 +93,28 @@ export default function SubscribePage() {
     router.push('/')
   }
 
+  const handleLogin = (email: string) => {
+    login(email)
+    setShowLoginModal(false)
+    router.push('/')
+  }
+
   const renderPlanSelection = () => (
     <div className="max-w-4xl mx-auto">
       <div className="text-center mb-8">
         <h2 className="text-2xl font-bold text-gray-900 mb-4">Choose Your Plan</h2>
         <p className="text-gray-600">Select the subscription plan that works best for you</p>
+
+        {/* Login Option */}
+        <div className="mt-4 text-sm">
+          <span className="text-gray-600">Already have an account? </span>
+          <button
+            onClick={() => setShowLoginModal(true)}
+            className="text-brand-primary hover:text-brand-primary-dark font-medium underline"
+          >
+            Log in here
+          </button>
+        </div>
       </div>
 
       {/* Common Features */}
@@ -338,7 +357,14 @@ export default function SubscribePage() {
           description="Get unlimited access to premium content and exclusive insights"
           className="text-center"
         />
-        
+
+        {/* Login Modal */}
+        <LoginModal
+          isOpen={showLoginModal}
+          onClose={() => setShowLoginModal(false)}
+          onLogin={handleLogin}
+        />
+
         <div className="py-8">
           {/* Progress indicator */}
           <div className="max-w-4xl mx-auto mb-8">

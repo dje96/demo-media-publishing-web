@@ -1,13 +1,46 @@
 "use client"
 
-import { FormInputIcon, Phone, MapPin, RefreshCw, Shield, Play } from "lucide-react"
+import { FormInputIcon, Phone, MapPin, RefreshCw, Shield, Play, Sparkles, ChevronDown, RotateCcw } from "lucide-react"
 import { useRouter } from "next/navigation"
+import { useState, useEffect, useRef } from "react"
 import { siteConfig, getRandomUtmParameters } from "@/src/lib/config"
 import { buildUrlWithUtm } from "@/src/lib/utils"
+import { isSignalsEnabled, setSignalsEnabled } from "@/src/lib/consent"
+import { newSession } from "@snowplow/browser-tracker"
+import { clearPaywallIntervention } from "@/src/lib/snowplow-config"
 
 export default function Footer() {
   const router = useRouter()
+  const [signalsEnabled, setSignalsEnabledState] = useState(true)
+  const [showSignalsMenu, setShowSignalsMenu] = useState(false)
+  const menuRef = useRef<HTMLDivElement>(null)
+
+  // Load Signals preference on mount
+  useEffect(() => {
+    setSignalsEnabledState(isSignalsEnabled())
+  }, [])
+
+  // Close menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setShowSignalsMenu(false)
+      }
+    }
+
+    if (showSignalsMenu) {
+      document.addEventListener('mousedown', handleClickOutside)
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [showSignalsMenu])
+
   const handleUtmReload = () => {
+    // Reset the Snowplow session
+    newSession()
+
     const currentUrl = window.location.href
     const utmParams = getRandomUtmParameters()
     const urlWithUtm = buildUrlWithUtm(currentUrl, utmParams)
@@ -17,6 +50,24 @@ export default function Footer() {
   const handleManageConsent = () => {
     // Dispatch a custom event to show the consent manager
     window.dispatchEvent(new CustomEvent('showConsentManager'))
+  }
+
+  const handleToggleSignals = () => {
+    const newValue = !signalsEnabled
+    setSignalsEnabledState(newValue)
+    setSignalsEnabled(newValue)
+    setShowSignalsMenu(false)
+  }
+
+  const handleResetPaywall = () => {
+    clearPaywallIntervention()
+    setShowSignalsMenu(false)
+    // Show a brief confirmation
+    alert('Paywall intervention has been reset!')
+  }
+
+  const toggleSignalsMenu = () => {
+    setShowSignalsMenu(!showSignalsMenu)
   }
 
   return (
@@ -116,6 +167,58 @@ export default function Footer() {
                 Manage Consent
               </button>
             )}
+
+            {/* Signals Menu */}
+            <div className="relative" ref={menuRef}>
+              <button
+                onClick={toggleSignalsMenu}
+                className={`inline-flex items-center px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
+                  signalsEnabled
+                    ? 'text-white bg-brand-primary hover:bg-brand-primary-dark'
+                    : 'text-gray-400 hover:text-white bg-gray-800 hover:bg-gray-700'
+                }`}
+                title="Signals configuration"
+              >
+                <Sparkles className="h-3 w-3 mr-1.5" />
+                Signals
+                <ChevronDown className={`h-3 w-3 ml-1 transition-transform ${showSignalsMenu ? 'rotate-180' : ''}`} />
+              </button>
+
+              {/* Dropdown Menu */}
+              {showSignalsMenu && (
+                <div className="absolute bottom-full right-0 mb-2 w-56 bg-gray-800 rounded-lg shadow-xl border border-gray-700 overflow-hidden z-50">
+                  {/* Toggle Signals Option */}
+                  <button
+                    onClick={handleToggleSignals}
+                    className="w-full px-4 py-3 text-left text-sm text-gray-300 hover:bg-gray-700 transition-colors flex items-center justify-between"
+                  >
+                    <div className="flex items-center">
+                      <Sparkles className="h-4 w-4 mr-2" />
+                      <span>Signals Personalization</span>
+                    </div>
+                    <span className={`text-xs font-semibold px-2 py-1 rounded ${
+                      signalsEnabled
+                        ? 'bg-green-600 text-white'
+                        : 'bg-gray-600 text-gray-300'
+                    }`}>
+                      {signalsEnabled ? 'On' : 'Off'}
+                    </span>
+                  </button>
+
+                  {/* Divider */}
+                  <div className="border-t border-gray-700" />
+
+                  {/* Reset Paywall Option */}
+                  <button
+                    onClick={handleResetPaywall}
+                    className="w-full px-4 py-3 text-left text-sm text-gray-300 hover:bg-gray-700 transition-colors flex items-center"
+                  >
+                    <RotateCcw className="h-4 w-4 mr-2" />
+                    <span>Reset Paywall Intervention</span>
+                  </button>
+                </div>
+              )}
+            </div>
 
             {/* Video Button */}
             <button

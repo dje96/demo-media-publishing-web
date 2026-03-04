@@ -1,15 +1,27 @@
-import { newTracker, trackPageView, enableActivityTracking, setUserId } from '@snowplow/browser-tracker';
+import {
+  newTracker,
+  trackPageView,
+  enableActivityTracking,
+  setUserId,
+  enableAnonymousTracking,
+  disableAnonymousTracking
+} from '@snowplow/browser-tracker';
 import { LinkClickTrackingPlugin, enableLinkClickTracking } from '@snowplow/browser-plugin-link-click-tracking';
-import { 
+import {
   EnhancedConsentPlugin,
-  trackConsentAllow, 
-  trackConsentDeny, 
-  trackConsentSelected, 
+  trackConsentAllow,
+  trackConsentDeny,
+  trackConsentSelected,
   trackConsentWithdrawn,
-  trackCmpVisible 
+  trackCmpVisible
 } from '@snowplow/browser-plugin-enhanced-consent';
 import { SnowplowMediaPlugin } from '@snowplow/browser-plugin-media';
 import { FormTrackingPlugin, enableFormTracking } from '@snowplow/browser-plugin-form-tracking';
+import {
+  SignalsPlugin,
+  addInterventionHandlers,
+  subscribeToInterventions
+} from '@snowplow/signals-browser-plugin';
 import {
   startMediaTracking,
   trackMediaPlay,
@@ -20,10 +32,16 @@ import {
   trackMediaVolumeChange,
   trackMediaFullscreenChange
 } from '@snowplow/browser-plugin-media';
+import { createArticle, type Article } from '../../snowtype/snowplow';
+import { getArticleBySlug } from './data';
+import { isSignalsEnabled, hasAnalyticsConsent } from './consent';
 
   // Initialize Snowplow tracker
 export function initializeSnowplow() {
-  newTracker('sp1', 'http://localhost:9090', {
+  newTracker('sp1', 'https://com-snplow-sales-aws-prod1.collector.snplow.net', {
+  // 127.0.0.1:9090 - Localhost
+  // https://com-snplow-sales-aws-prod1.mini.snplow.net - Mini
+  // https://com-snplow-sales-aws-prod1.collector.snplow.net - Prod
     appId: 'demo-media-publishing-web',
     appVersion: '1.0.0',
     cookieSameSite: 'Lax',
@@ -32,7 +50,7 @@ export function initializeSnowplow() {
     contexts: {
       webPage: true
     },
-    plugins: [LinkClickTrackingPlugin(), EnhancedConsentPlugin(), SnowplowMediaPlugin(), FormTrackingPlugin()],
+    plugins: [LinkClickTrackingPlugin(), EnhancedConsentPlugin(), SnowplowMediaPlugin(), FormTrackingPlugin(), SignalsPlugin()],
     crossDomainLinker: function (linkElement) {
       // Enable cross-domain linking for snowplow.io domain
       // This adds a _sp parameter to outbound links containing the domain user ID and timestamp
@@ -89,7 +107,121 @@ export function initializeSnowplow() {
   // Restore user ID from localStorage if available
   restoreUserFromStorage();
 
+  // Set up Signals intervention handlers
+  setupSignalsInterventions();
+
+  // Configure anonymous tracking based on consent
+  configureAnonymousTracking();
+
   console.log('Snowplow tracker initialized');
+}
+
+// Set up Signals intervention handlers for paywall
+function setupSignalsInterventions() {
+  // Add intervention handler for subscription nudge
+  addInterventionHandlers({
+    paywallHandler(intervention) {
+      console.log("Paywall intervention received!", intervention);
+
+      // Only process intervention if Signals personalization is enabled
+      if (!isSignalsEnabled()) {
+        console.log("Signals personalization is disabled, ignoring paywall intervention");
+        return;
+      }
+
+      // Store intervention in sessionStorage to persist across article pages
+      if (typeof window !== 'undefined') {
+        sessionStorage.setItem('paywall-intervention', JSON.stringify({
+          triggered: true,
+          timestamp: Date.now(),
+          intervention: intervention
+        }));
+
+        // Dispatch custom event to notify components
+        window.dispatchEvent(new CustomEvent('paywallInterventionTriggered', {
+          detail: { intervention }
+        }));
+      }
+    }
+  });
+
+  // Subscribe to interventions from Signals endpoint
+  subscribeToInterventions({
+    endpoint: "https://7f9742b834d7.signals.snowplowanalytics.com"
+  });
+
+  console.log('Signals interventions configured');
+}
+
+// Configure anonymous tracking based on current consent
+function configureAnonymousTracking() {
+  if (typeof window === 'undefined') return;
+
+  const analyticsConsent = hasAnalyticsConsent();
+
+  if (!analyticsConsent) {
+    // No analytics consent - enable anonymous tracking with server anonymization
+    // This prevents the collector from generating network_userid cookie and capturing IP address
+    enableAnonymousTracking({
+      options: {
+        withServerAnonymisation: true,
+        withSessionTracking: true
+      }
+    });
+    console.log('Anonymous tracking enabled with server anonymization (no analytics consent)');
+  } else {
+    // Analytics consent given - disable anonymous tracking to track with full identifiers
+    disableAnonymousTracking();
+    console.log('Anonymous tracking disabled (analytics consent given)');
+  }
+}
+
+// Enable anonymous tracking when consent is denied or withdrawn
+export function enableAnonymousTrackingMode() {
+  if (typeof window === 'undefined') return;
+
+  enableAnonymousTracking({
+    options: {
+      withServerAnonymisation: true,
+      withSessionTracking: true
+    }
+  });
+  console.log('Anonymous tracking mode enabled with server anonymization');
+}
+
+// Disable anonymous tracking when consent is granted
+export function disableAnonymousTrackingMode() {
+  if (typeof window === 'undefined') return;
+
+  disableAnonymousTracking();
+  console.log('Anonymous tracking mode disabled - full tracking enabled');
+}
+
+// Check if paywall intervention has been triggered this session
+export function hasPaywallInterventionTriggered(): boolean {
+  if (typeof window === 'undefined') return false;
+
+  // Don't show paywall if Signals personalization is disabled
+  if (!isSignalsEnabled()) return false;
+
+  const stored = sessionStorage.getItem('paywall-intervention');
+  if (!stored) return false;
+
+  try {
+    const data = JSON.parse(stored);
+    return data.triggered === true;
+  } catch {
+    return false;
+  }
+}
+
+// Clear paywall intervention (for testing or when user subscribes)
+export function clearPaywallIntervention() {
+  if (typeof window === 'undefined') return;
+  sessionStorage.removeItem('paywall-intervention');
+
+  // Dispatch event to notify components
+  window.dispatchEvent(new CustomEvent('paywallInterventionCleared'));
 }
 
 // Enable form tracking for contact forms with enhanced configuration
@@ -153,11 +285,52 @@ function restoreUserFromStorage() {
   }
 }
 
+// Helper function to extract article data from URL path
+function getArticleDataFromPath(pathname: string): Article | null {
+  // Check if we're on an article page (/articles/[slug])
+  const articleMatch = pathname.match(/^\/articles\/([^\/]+)$/);
+  if (!articleMatch) {
+    return null;
+  }
+  
+  const slug = articleMatch[1];
+  const article = getArticleBySlug(slug);
+  
+  if (!article) {
+    return null;
+  }
+  
+  // Convert the article data to the Article entity format
+  return {
+    article_id: article.id,
+    title: article.title,
+    author: article.author,
+    category: article.category,
+    position: null // Page views don't have a position context
+  };
+}
+
 // Track page view
 export function trackPageViewEvent() {
   // Ensure user ID is restored before tracking
   restoreUserFromStorage();
-  trackPageView();
+  
+  // Check if we're on an article page and get article data
+  let articleEntity: Article | null = null;
+  if (typeof window !== 'undefined') {
+    articleEntity = getArticleDataFromPath(window.location.pathname);
+  }
+  
+  // Track page view with article context if available
+  if (articleEntity) {
+    trackPageView({
+      context: [createArticle(articleEntity)]
+    });
+    console.log('Page view tracked with article entity:', articleEntity.title);
+  } else {
+    trackPageView();
+    console.log('Page view tracked');
+  }
   
   // Clean up _sp parameter from URL after page view is tracked
   // This prevents the parameter from being shared when users copy the URL
@@ -166,8 +339,6 @@ export function trackPageViewEvent() {
     history.replaceState(history.state, "", cleanUrl);
     console.log('Cleaned _sp parameter from URL');
   }
-  
-  console.log('Page view tracked');
 }
 
 // Set user ID for tracking

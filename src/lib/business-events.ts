@@ -5,7 +5,6 @@ import {
   trackNewsletterSignupSpec,
   trackAdClickSpec,
   trackAdImpressionSpec,
-  trackLoginSuccessSpec,
   trackEnterSubscriptionFlowSpec,
   trackConfirmPaymentSpec,
   trackSelectAPlanSpec,
@@ -217,21 +216,6 @@ export function trackAdImpression(adData: {
   } catch (error) {
     console.error('Error tracking ad impression:', error);
   }
-} 
-
-// Login Success Tracking
-export function trackLoginSuccess(loginMethod?: 'email' | 'google' | 'facebook' | 'apple') {
-  console.log('Tracking login success');
-  
-  try {
-    trackLoginSuccessSpec({
-      login_status: 'success',
-      login_method: loginMethod
-    });
-    console.log('Login success tracking successful');
-  } catch (error) {
-    console.error('Error tracking login success:', error);
-  }
 }
 
 // Enter Subscription Flow Tracking
@@ -263,7 +247,7 @@ export function trackConfirmPayment() {
 }
 
 // Select a Plan Tracking
-export function trackSelectPlan(planType: 'monthly' | 'annualy') {
+export function trackSelectPlan(planType: 'monthly' | 'annually') {
   console.log('Tracking select plan:', planType);
   
   try {

@@ -12,7 +12,7 @@ export default function NewsletterSignup() {
     e.preventDefault()
     if (email.trim()) {
       // Track newsletter signup
-      trackNewsletterSignup();
+      // trackNewsletterSignup();
       
       setShowPopup(true)
       setEmail("")
