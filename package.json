@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.80.0",
     "@snowplow/browser-plugin-enhanced-consent": "^4.6.5",
     "@snowplow/browser-plugin-form-tracking": "^4.6.5",
     "@snowplow/browser-plugin-link-click-tracking": "^4.6.3",

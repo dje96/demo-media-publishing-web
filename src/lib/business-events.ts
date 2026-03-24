@@ -17,6 +17,7 @@ import {
   type ArticleFullSearch,
   createAbTest
 } from '../../snowtype/snowplow';
+import { trackStructEvent } from '@snowplow/browser-tracker';
 
 // Article View Tracking
 export function trackArticleView(articleData: {
@@ -273,4 +274,36 @@ export function trackPersonalDetails() {
   } catch (error) {
     console.error('Error tracking personal details:', error);
   }
-} 
+}
+
+// Chatbot Tracking
+export function trackChatOpened() {
+  trackStructEvent({
+    category: 'chatbot',
+    action: 'opened',
+  });
+}
+
+export function trackChatClosed() {
+  trackStructEvent({
+    category: 'chatbot',
+    action: 'closed',
+  });
+}
+
+export function trackChatMessageSent(messageText: string) {
+  trackStructEvent({
+    category: 'chatbot',
+    action: 'message_sent',
+    label: messageText.substring(0, 100),
+    property: 'user',
+  });
+}
+
+export function trackChatRecommendationClicked(articleSlug: string) {
+  trackStructEvent({
+    category: 'chatbot',
+    action: 'recommendation_clicked',
+    label: articleSlug,
+  });
+}

@@ -2,7 +2,7 @@ import { allArticles } from './data'
 import { Article } from './config'
 import { isSignalsEnabled } from './consent'
 
-interface UserAttributes {
+export interface UserAttributes {
   last_category_viewed?: string
   last_author_viewed?: string
   article_view_count?: number
@@ -10,6 +10,7 @@ interface UserAttributes {
   num_ai_heartbeats?: number
   num_business_heartbeats?: number
   num_technology_heartbeats?: number
+  unique_article_ids?: string[]
 }
 
 export function getRecommendations(count: number = 4): Article[] {
@@ -108,7 +109,7 @@ export async function getPersonalizedRecommendations(count: number = 4): Promise
 } 
 
 // Get the actual Snowplow session ID
-function getSessionId(): string {
+export function getSessionId(): string {
   if (typeof window === 'undefined') {
     return 'default-session';
   }

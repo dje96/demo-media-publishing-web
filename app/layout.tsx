@@ -4,6 +4,7 @@ import "@/src/styles/globals.css";
 import { UserProvider } from "@/src/contexts/user-context";
 import SnowplowProvider from "@/src/components/snowplow-provider";
 import { siteConfig } from "@/src/lib/config";
+import Chatbot from "@/src/components/chatbot";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -67,6 +68,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         <SnowplowProvider>
           <UserProvider>
             {children}
+            <Chatbot />
           </UserProvider>
         </SnowplowProvider>
       </body>
