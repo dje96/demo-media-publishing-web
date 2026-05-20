@@ -33,29 +33,6 @@ export type Article = {
 }
 
 /**
- * Entity capturing information about an A/B test.
- */
-export type AbTest = {
-    /**
-     * Unique identifier for the experiment.
-     */
-    experiment_id: string;
-    /**
-     * Human-readable name of the experiment.
-     */
-    experiment_name?: null | string;
-    /**
-     * Unique identifier for the variant.
-     */
-    variant_id: string;
-    /**
-     * Human-readable name of the variant.
-     */
-    variant_name?: null | string;
-    [property: string]: any;
-}
-
-/**
  * Details of an advertisement shown or interacted with
  */
 export type Ad = {
@@ -114,6 +91,119 @@ export type Placement = "header" | "sidebar" | "footer" | "in-feed" | "native" |
 export type AdType = "banner" | "video" | "native" | "interstitial" | "rich_media" | "sponsored_content" | "search" | "email" | "audio";
 
 /**
+ * User receives a response from the agent. Message details are in the attached
+ * message_context entity. Agent details are in the attached agent_context entity.
+ */
+export type MessageReceived = {
+    /**
+     * Agent invocation that generated this response
+     */
+    invocation_id: string;
+    /**
+     * Timestamp when response was received
+     */
+    received_at: Date;
+    /**
+     * Time taken to generate response
+     */
+    response_time_ms: number;
+    /**
+     * Total tokens used in generation
+     */
+    tokens_used?: number | null;
+    /**
+     * Number of tool calls made during this response
+     */
+    tool_calls_count: number;
+}
+
+/**
+ * Context entity describing the agent, its configuration, and current state when performing
+ * actions.
+ */
+export type Agent = {
+    /**
+     * Application version
+     */
+    application_version?: null | string;
+    /**
+     * Number of messages in conversation history at this point
+     */
+    conversation_messages_count?: number | null;
+    /**
+     * Current step number within the invocation
+     */
+    current_step_number?: number | null;
+    /**
+     * Unique identifier for current agent invocation
+     */
+    invocation_id: string;
+    /**
+     * LLM model identifier (e.g., claude-sonnet-4-20250514)
+     */
+    model_name: string;
+    /**
+     * LLM provider (e.g., anthropic, openai)
+     */
+    model_provider: string;
+    /**
+     * Type/name of agent
+     */
+    type: string;
+}
+
+/**
+ * Context entity describing a chat message, its content, and metadata. Attached to
+ * message_sent and message_received events.
+ */
+export type Message = {
+    /**
+     * A session identifier for the chat
+     */
+    chat_session_id: string;
+    /**
+     * Turn number in the conversation (pair of user + assistant messages)
+     */
+    conversation_turn?: number | null;
+    /**
+     * Unique identifier for this message
+     */
+    id: string;
+    /**
+     * Position of this message in the conversation
+     */
+    index: number;
+    /**
+     * Length of message in characters
+     */
+    length: number;
+    /**
+     * Truncated message content for privacy (first 100 chars)
+     */
+    preview?: null | string;
+    /**
+     * Who sent the message (user or AI assistant)
+     */
+    role: Role;
+}
+
+/**
+ * Who sent the message (user or AI assistant)
+ */
+export type Role = "user" | "assistant";
+
+/**
+ * User sends a message in the chat interface. Message details are in the attached
+ * message_context entity.
+ */
+export type MessageSent = {
+    /**
+     * Timestamp when message was sent
+     */
+    sent_at: Date;
+}
+
+/**
  * Captures steps as a user moves through the subscription workflow on a media and
  * publishing site. - Generated from a property rule
  */
@@ -167,22 +257,6 @@ export type SubscriptionWorkflowPersonalDetails = {
  * The name of the step the user is currently on in the subscription workflow.
  */
 export type SubscriptionWorkflowPersonalDetailsStepName = "personal_details";
-
-/**
- * Tracks types of user conversions such as purchases, signups, downloads, etc. - Generated
- * from a property rule
- */
-export type ConversionEventNewsletterSignup = {
-    /**
-     * The type of conversion the user completed.
-     */
-    conversion_type: ConversionType;
-}
-
-/**
- * The type of conversion the user completed.
- */
-export type ConversionType = "newsletter_signup";
 
 /**
  * Data structure for when a user interacts with an advertisement - Generated from a
@@ -384,10 +458,10 @@ export type LoginStatus = "success";
 /**
  * Creates a Snowplow Event Specification entity.
  */
-export function createEventSpecification(eventSpecification: EventSpecification){
+export function createEventSpecification(eventSpecification: Omit<EventSpecification, 'data_product_domain'> & Partial<Pick<EventSpecification, 'data_product_domain'>>){
     return {
         schema:
-            'iglu:com.snowplowanalytics.snowplow/event_specification/jsonschema/1-0-3',
+            'iglu:com.snowplowanalytics.snowplow/event_specification/jsonschema/1-0-4',
         data: eventSpecification,
     }
 }
@@ -397,10 +471,11 @@ export function createEventSpecification(eventSpecification: EventSpecification)
  */
 interface EventSpecification {
     id: string;
+    version: number;
     name: string;
     data_product_id: string;
     data_product_name: string;
-    data_product_domain: string;
+    data_product_domain?: string;
 }
 
 type ContextsOrTimestamp<T = any> = Omit<CommonEventProperties<T>, 'context'> & { context?: SelfDescribingJson<T>[] | null | undefined }
@@ -432,33 +507,6 @@ export function createArticle(article: Article){
     }
 }
 /**
- * Track a Snowplow event for AbTest.
- * Entity capturing information about an A/B test.
- */
-export function trackAbTest<T extends {} = any>(abTest: AbTest & ContextsOrTimestamp<T>, trackers?: string[]){
-    const { context, timestamp, ...data } = abTest;
-    const event: SelfDescribingJson = {
-        schema: 'iglu:com.demo/ab_test/jsonschema/1-0-0',
-        data
-    };
-
-    trackSelfDescribingEvent({
-        event,
-        context,
-        timestamp,
-    }, trackers);
-}
-
-/**
- * Creates a Snowplow AbTest entity.
- */
-export function createAbTest(abTest: AbTest){
-    return {
-        schema: 'iglu:com.demo/ab_test/jsonschema/1-0-0',
-        data: abTest
-    }
-}
-/**
  * Track a Snowplow event for Ad.
  * Details of an advertisement shown or interacted with
  */
@@ -483,6 +531,114 @@ export function createAd(ad: Ad){
     return {
         schema: 'iglu:com.demo/ad/jsonschema/1-0-0',
         data: ad
+    }
+}
+/**
+ * Track a Snowplow event for MessageReceived.
+ * User receives a response from the agent. Message details are in the attached message_context entity. Agent details are in the attached agent_context entity.
+ */
+export function trackMessageReceived<T extends {} = any>(messageReceived: MessageReceived & ContextsOrTimestamp<T>, trackers?: string[]){
+    const { context, timestamp, ...data } = messageReceived;
+    const event: SelfDescribingJson = {
+        schema: 'iglu:com.demo/message_received/jsonschema/1-0-0',
+        data
+    };
+
+    trackSelfDescribingEvent({
+        event,
+        context,
+        timestamp,
+    }, trackers);
+}
+
+/**
+ * Creates a Snowplow MessageReceived entity.
+ */
+export function createMessageReceived(messageReceived: MessageReceived){
+    return {
+        schema: 'iglu:com.demo/message_received/jsonschema/1-0-0',
+        data: messageReceived
+    }
+}
+/**
+ * Track a Snowplow event for Agent.
+ * Context entity describing the agent, its configuration, and current state when performing actions.
+ */
+export function trackAgent<T extends {} = any>(agent: Agent & ContextsOrTimestamp<T>, trackers?: string[]){
+    const { context, timestamp, ...data } = agent;
+    const event: SelfDescribingJson = {
+        schema: 'iglu:com.demo/agent/jsonschema/1-0-0',
+        data
+    };
+
+    trackSelfDescribingEvent({
+        event,
+        context,
+        timestamp,
+    }, trackers);
+}
+
+/**
+ * Creates a Snowplow Agent entity.
+ */
+export function createAgent(agent: Agent){
+    return {
+        schema: 'iglu:com.demo/agent/jsonschema/1-0-0',
+        data: agent
+    }
+}
+/**
+ * Track a Snowplow event for Message.
+ * Context entity describing a chat message, its content, and metadata. Attached to message_sent and message_received events.
+ */
+export function trackMessage<T extends {} = any>(message: Message & ContextsOrTimestamp<T>, trackers?: string[]){
+    const { context, timestamp, ...data } = message;
+    const event: SelfDescribingJson = {
+        schema: 'iglu:com.demo/message/jsonschema/1-0-0',
+        data
+    };
+
+    trackSelfDescribingEvent({
+        event,
+        context,
+        timestamp,
+    }, trackers);
+}
+
+/**
+ * Creates a Snowplow Message entity.
+ */
+export function createMessage(message: Message){
+    return {
+        schema: 'iglu:com.demo/message/jsonschema/1-0-0',
+        data: message
+    }
+}
+/**
+ * Track a Snowplow event for MessageSent.
+ * User sends a message in the chat interface. Message details are in the attached message_context entity.
+ */
+export function trackMessageSent<T extends {} = any>(messageSent: MessageSent & ContextsOrTimestamp<T>, trackers?: string[]){
+    const { context, timestamp, ...data } = messageSent;
+    const event: SelfDescribingJson = {
+        schema: 'iglu:com.demo/message_sent/jsonschema/1-0-0',
+        data
+    };
+
+    trackSelfDescribingEvent({
+        event,
+        context,
+        timestamp,
+    }, trackers);
+}
+
+/**
+ * Creates a Snowplow MessageSent entity.
+ */
+export function createMessageSent(messageSent: MessageSent){
+    return {
+        schema: 'iglu:com.demo/message_sent/jsonschema/1-0-0',
+        data: messageSent
     }
 }
 /**
@@ -529,24 +685,6 @@ function trackSubscriptionWorkflowPersonalDetails<T extends {} = any>(subscripti
     const { context, timestamp, ...data } = subscriptionWorkflowPersonalDetails;
     const event: SelfDescribingJson = {
         schema: 'iglu:com.demo.media/subscription_workflow/jsonschema/1-0-0',
-        data
-    };
-
-    trackSelfDescribingEvent({
-        event,
-        context,
-        timestamp,
-    }, trackers);
-}
-
-/**
- * Track a Snowplow event for ConversionEventNewsletterSignup.
- * Tracks types of user conversions such as purchases, signups, downloads, etc. - Generated from a property rule
- */
-function trackConversionEventNewsletterSignup<T extends {} = any>(conversionEventNewsletterSignup: ConversionEventNewsletterSignup & ContextsOrTimestamp<T>, trackers?: string[]){
-    const { context, timestamp, ...data } = conversionEventNewsletterSignup;
-    const event: SelfDescribingJson = {
-        schema: 'iglu:com.demo/conversion_event/jsonschema/1-0-0',
         data
     };
 
@@ -707,8 +845,9 @@ function trackLoginLoginSuccess<T extends {} = any>(loginLoginSuccess: LoginLogi
  * ID: 05f604ca-af39-4f32-8b81-d35ec7c17720
  */
 export function trackConfirmPaymentSpec(confirmPayment: SubscriptionWorkflowConfirmPayment & ContextsOrTimestamp, trackers?: string[]){
-    const eventSpecificationContext: SelfDescribingJson<EventSpecification> = createEventSpecification({ 
+    const eventSpecificationContext = createEventSpecification({
         id: '05f604ca-af39-4f32-8b81-d35ec7c17720',
+        version: 6,
         name: 'Confirm Payment',
         data_product_id: 'ead1f30f-1234-4350-a112-02003991e391',
         data_product_name: 'Customer Acquisition',
@@ -731,8 +870,9 @@ export function trackConfirmPaymentSpec(confirmPayment: SubscriptionWorkflowConf
  * ID: 207d6f27-a125-402a-b515-d40064d0f1c4
  */
 export function trackArticleViewSpec(articleView: ArticleInteractionArticleView & ContextsOrTimestamp<Article>, trackers?: string[]){
-    const eventSpecificationContext: SelfDescribingJson<EventSpecification> = createEventSpecification({ 
+    const eventSpecificationContext = createEventSpecification({
         id: '207d6f27-a125-402a-b515-d40064d0f1c4',
+        version: 10,
         name: 'Article View',
         data_product_id: '98f633e6-ab32-43a8-8e07-0d6124da0ee7',
         data_product_name: 'Editorial Content Engagement',
@@ -755,8 +895,9 @@ export function trackArticleViewSpec(articleView: ArticleInteractionArticleView 
  * ID: 3962b139-d376-4ff3-9554-e78df3332676
  */
 export function trackPersonalDetailsSpec(personalDetails: SubscriptionWorkflowPersonalDetails & ContextsOrTimestamp, trackers?: string[]){
-    const eventSpecificationContext: SelfDescribingJson<EventSpecification> = createEventSpecification({ 
+    const eventSpecificationContext = createEventSpecification({
         id: '3962b139-d376-4ff3-9554-e78df3332676',
+        version: 3,
         name: 'Personal Details',
         data_product_id: 'ead1f30f-1234-4350-a112-02003991e391',
         data_product_name: 'Customer Acquisition',
@@ -775,36 +916,13 @@ export function trackPersonalDetailsSpec(personalDetails: SubscriptionWorkflowPe
     trackSubscriptionWorkflowPersonalDetails<Record<string, unknown> | EventSpecification>(modifiedPersonalDetails, trackers);
 }
 /**
- * Tracks a NewsletterSignup event specification.
- * ID: 48dac2dc-e478-49a0-875f-ce27281c84f4
- */
-export function trackNewsletterSignupSpec(newsletterSignup: ConversionEventNewsletterSignup & ContextsOrTimestamp<AbTest>, trackers?: string[]){
-    const eventSpecificationContext: SelfDescribingJson<EventSpecification> = createEventSpecification({ 
-        id: '48dac2dc-e478-49a0-875f-ce27281c84f4',
-        name: 'Newsletter Signup',
-        data_product_id: 'ead1f30f-1234-4350-a112-02003991e391',
-        data_product_name: 'Customer Acquisition',
-        data_product_domain: 'Marketing'
-    });
-
-    const context = Array.isArray(newsletterSignup.context)
-        ? [...newsletterSignup.context, eventSpecificationContext]
-        : [eventSpecificationContext];
-
-    const modifiedNewsletterSignup = {
-        ...newsletterSignup,
-        context,
-    };
-
-    trackConversionEventNewsletterSignup<AbTest | EventSpecification>(modifiedNewsletterSignup, trackers);
-}
-/**
  * Tracks a AdClick event specification.
  * ID: 5f04be54-cc64-4e50-90f6-a85df727a50e
  */
 export function trackAdClickSpec(adClick: AdInteractionAdClick & ContextsOrTimestamp<Ad>, trackers?: string[]){
-    const eventSpecificationContext: SelfDescribingJson<EventSpecification> = createEventSpecification({ 
+    const eventSpecificationContext = createEventSpecification({
         id: '5f04be54-cc64-4e50-90f6-a85df727a50e',
+        version: 7,
         name: 'Ad Click',
         data_product_id: '58526f0a-c5b6-4d08-bc4f-199836217d0c',
         data_product_name: 'Advertising Performance',
@@ -827,8 +945,9 @@ export function trackAdClickSpec(adClick: AdInteractionAdClick & ContextsOrTimes
  * ID: 6511cf68-d715-4729-b83e-4c7ede68ccbb
  */
 export function trackAdImpressionSpec(adImpression: AdInteractionAdImpression & ContextsOrTimestamp<Ad>, trackers?: string[]){
-    const eventSpecificationContext: SelfDescribingJson<EventSpecification> = createEventSpecification({ 
+    const eventSpecificationContext = createEventSpecification({
         id: '6511cf68-d715-4729-b83e-4c7ede68ccbb',
+        version: 11,
         name: 'Ad Impression',
         data_product_id: '58526f0a-c5b6-4d08-bc4f-199836217d0c',
         data_product_name: 'Advertising Performance',
@@ -851,8 +970,9 @@ export function trackAdImpressionSpec(adImpression: AdInteractionAdImpression & 
  * ID: 73383b45-f16a-4249-b7d1-3edf0731713b
  */
 export function trackQuickSearchSpec(quickSearch: SearchPerformedQuickSearch & ContextsOrTimestamp<ArticleQuickSearch>, trackers?: string[]){
-    const eventSpecificationContext: SelfDescribingJson<EventSpecification> = createEventSpecification({ 
+    const eventSpecificationContext = createEventSpecification({
         id: '73383b45-f16a-4249-b7d1-3edf0731713b',
+        version: 5,
         name: 'Quick Search',
         data_product_id: '98f633e6-ab32-43a8-8e07-0d6124da0ee7',
         data_product_name: 'Editorial Content Engagement',
@@ -871,12 +991,38 @@ export function trackQuickSearchSpec(quickSearch: SearchPerformedQuickSearch & C
     trackSearchPerformedQuickSearch<ArticleQuickSearch | EventSpecification>(modifiedQuickSearch, trackers);
 }
 /**
+ * Tracks a AgentMessage event specification.
+ * ID: 79fa7504-66b1-4e96-9484-5aedca6cb3f6
+ */
+export function trackAgentMessageSpec(agentMessage: MessageReceived & ContextsOrTimestamp<Agent | Message>, trackers?: string[]){
+    const eventSpecificationContext = createEventSpecification({
+        id: '79fa7504-66b1-4e96-9484-5aedca6cb3f6',
+        version: 2,
+        name: 'Agent Message',
+        data_product_id: 'fb649b24-5201-404f-a0ae-3fcc5d621271',
+        data_product_name: 'Agentic Assistant',
+        data_product_domain: 'Product'
+    });
+
+    const context = Array.isArray(agentMessage.context)
+        ? [...agentMessage.context, eventSpecificationContext]
+        : [eventSpecificationContext];
+
+    const modifiedAgentMessage = {
+        ...agentMessage,
+        context,
+    };
+
+    trackMessageReceived<Agent | Message | EventSpecification>(modifiedAgentMessage, trackers);
+}
+/**
  * Tracks a FullSearch event specification.
  * ID: c2a5edb5-594f-444f-9d22-eed1081b41bf
  */
 export function trackFullSearchSpec(fullSearch: SearchPerformedFullSearch & ContextsOrTimestamp<ArticleFullSearch>, trackers?: string[]){
-    const eventSpecificationContext: SelfDescribingJson<EventSpecification> = createEventSpecification({ 
+    const eventSpecificationContext = createEventSpecification({
         id: 'c2a5edb5-594f-444f-9d22-eed1081b41bf',
+        version: 5,
         name: 'Full Search',
         data_product_id: '98f633e6-ab32-43a8-8e07-0d6124da0ee7',
         data_product_name: 'Editorial Content Engagement',
@@ -899,8 +1045,9 @@ export function trackFullSearchSpec(fullSearch: SearchPerformedFullSearch & Cont
  * ID: d30cf2d2-23ed-4faa-889b-bb776182d8ab
  */
 export function trackSelectAPlanSpec(selectAPlan: SubscriptionWorkflowSelectAPlan & ContextsOrTimestamp, trackers?: string[]){
-    const eventSpecificationContext: SelfDescribingJson<EventSpecification> = createEventSpecification({ 
+    const eventSpecificationContext = createEventSpecification({
         id: 'd30cf2d2-23ed-4faa-889b-bb776182d8ab',
+        version: 7,
         name: 'Select a Plan',
         data_product_id: 'ead1f30f-1234-4350-a112-02003991e391',
         data_product_name: 'Customer Acquisition',
@@ -919,12 +1066,38 @@ export function trackSelectAPlanSpec(selectAPlan: SubscriptionWorkflowSelectAPla
     trackSubscriptionWorkflowSelectAPlan<Record<string, unknown> | EventSpecification>(modifiedSelectAPlan, trackers);
 }
 /**
+ * Tracks a UserMessage event specification.
+ * ID: e604200b-01ff-4da3-aa96-61887f93e7d5
+ */
+export function trackUserMessageSpec(userMessage: MessageSent & ContextsOrTimestamp<Message>, trackers?: string[]){
+    const eventSpecificationContext = createEventSpecification({
+        id: 'e604200b-01ff-4da3-aa96-61887f93e7d5',
+        version: 2,
+        name: 'User Message',
+        data_product_id: 'fb649b24-5201-404f-a0ae-3fcc5d621271',
+        data_product_name: 'Agentic Assistant',
+        data_product_domain: 'Product'
+    });
+
+    const context = Array.isArray(userMessage.context)
+        ? [...userMessage.context, eventSpecificationContext]
+        : [eventSpecificationContext];
+
+    const modifiedUserMessage = {
+        ...userMessage,
+        context,
+    };
+
+    trackMessageSent<Message | EventSpecification>(modifiedUserMessage, trackers);
+}
+/**
  * Tracks a EnterSubscriptionFlow event specification.
  * ID: eca878e2-aa58-48d5-b3dd-86980ec2fc03
  */
 export function trackEnterSubscriptionFlowSpec(enterSubscriptionFlow: SubscriptionWorkflowEnterSubscriptionFlow & ContextsOrTimestamp, trackers?: string[]){
-    const eventSpecificationContext: SelfDescribingJson<EventSpecification> = createEventSpecification({ 
+    const eventSpecificationContext = createEventSpecification({
         id: 'eca878e2-aa58-48d5-b3dd-86980ec2fc03',
+        version: 3,
         name: 'Enter Subscription Flow',
         data_product_id: 'ead1f30f-1234-4350-a112-02003991e391',
         data_product_name: 'Customer Acquisition',
@@ -947,8 +1120,9 @@ export function trackEnterSubscriptionFlowSpec(enterSubscriptionFlow: Subscripti
  * ID: fbda2b20-8c46-4750-833b-bf9cbcaf165e
  */
 export function trackLoginSuccessSpec(loginSuccess: LoginLoginSuccess & ContextsOrTimestamp, trackers?: string[]){
-    const eventSpecificationContext: SelfDescribingJson<EventSpecification> = createEventSpecification({ 
+    const eventSpecificationContext = createEventSpecification({
         id: 'fbda2b20-8c46-4750-833b-bf9cbcaf165e',
+        version: 2,
         name: 'Login Success',
         data_product_id: 'ead1f30f-1234-4350-a112-02003991e391',
         data_product_name: 'Customer Acquisition',

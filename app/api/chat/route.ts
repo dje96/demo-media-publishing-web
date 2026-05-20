@@ -8,11 +8,21 @@ const anthropic = new Anthropic();
 
 async function fetchSignalsAttributes(sessionId: string): Promise<UserAttributes | null> {
   try {
+    const baseUrl = process.env.SIGNALS_API_URL;
+    const apiKey = process.env.SNOWPLOW_CONSOLE_API_KEY;
+    const apiKeyId = process.env.SNOWPLOW_CONSOLE_API_KEY_ID;
+    const organizationId = process.env.SNOWPLOW_CONSOLE_ORG_ID;
+
+    if (!baseUrl || !apiKey || !apiKeyId || !organizationId) {
+      console.error('[Chat] Signals environment variables are not configured. Required: SIGNALS_API_URL, SNOWPLOW_CONSOLE_API_KEY, SNOWPLOW_CONSOLE_API_KEY_ID, SNOWPLOW_CONSOLE_ORG_ID');
+      return null;
+    }
+
     const signals = new Signals({
-      baseUrl: "https://7f9742b834d7.signals.snowplowanalytics.com",
-      apiKey: "082ca381-b837-4f05-b0f2-dfee2facce37",
-      apiKeyId: "ea95fd6e-a906-4f4c-9560-3d4eb86d9ed0",
-      organizationId: "b12539df-a711-42bd-bdfa-175308c55fd5",
+      baseUrl,
+      apiKey,
+      apiKeyId,
+      organizationId,
     });
 
     const attributes = await signals.getServiceAttributes({
@@ -20,6 +30,8 @@ async function fetchSignalsAttributes(sessionId: string): Promise<UserAttributes
       attribute_key: "domain_sessionid",
       identifier: sessionId,
     });
+
+    console.log('[Chat] Raw Signals response:', JSON.stringify(attributes, null, 2));
 
     return attributes as UserAttributes;
   } catch (error) {
@@ -45,7 +57,7 @@ export async function POST(request: NextRequest) {
 
     // Stream the response from Claude
     const stream = anthropic.messages.stream({
-      model: 'claude-haiku-4-5-20251001',
+      model: 'claude-opus-4-6',
       max_tokens: 1024,
       system: systemPrompt,
       messages: messages.map((m: { role: string; content: string }) => ({

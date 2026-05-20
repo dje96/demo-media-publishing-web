@@ -85,10 +85,9 @@ export default function SubscribePage() {
 
   const handlePaymentSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    // Track subscription completion
-    trackConfirmPayment()
-    // Log in the user and redirect to homepage
+    // Set user_id before firing the confirm_payment event so it is attached
     login(subscriptionData.email)
+    trackConfirmPayment()
     localStorage.setItem('showSubscriptionThankYou', 'true')
     router.push('/')
   }

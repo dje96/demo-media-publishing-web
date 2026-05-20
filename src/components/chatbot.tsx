@@ -6,12 +6,7 @@ import { getSessionId } from '@/src/lib/recommendations';
 import { isSignalsEnabled } from '@/src/lib/consent';
 import { getArticleBySlug } from '@/src/lib/data';
 import { getCategoryByName } from '@/src/lib/config';
-import {
-  trackChatOpened,
-  trackChatClosed,
-  trackChatMessageSent,
-  trackChatRecommendationClicked,
-} from '@/src/lib/business-events';
+import { trackUserMessage, trackAgentMessage } from '@/src/lib/business-events';
 import type { ChatMessage } from '@/src/lib/chat';
 
 const WELCOME_MESSAGE: ChatMessage = {
@@ -30,7 +25,7 @@ function parseArticleRefs(content: string): { text: string; slugs: string[] } {
   return { text, slugs };
 }
 
-function ArticleCard({ slug, onLinkClick }: { slug: string; onLinkClick: (slug: string) => void }) {
+function ArticleCard({ slug }: { slug: string }) {
   const article = getArticleBySlug(slug);
   if (!article) return null;
 
@@ -39,11 +34,6 @@ function ArticleCard({ slug, onLinkClick }: { slug: string; onLinkClick: (slug: 
   return (
     <a
       href={`/articles/${slug}`}
-      onClick={(e) => {
-        e.preventDefault();
-        onLinkClick(slug);
-        window.location.href = `/articles/${slug}`;
-      }}
       className="block rounded-lg overflow-hidden border border-gray-200 hover:border-brand-primary/50 hover:shadow-md transition-all mt-2"
     >
       <div className="relative h-28">
@@ -85,6 +75,7 @@ export default function Chatbot() {
   const [signalsOn, setSignalsOn] = useState(true);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const chatSessionIdRef = useRef(crypto.randomUUID());
 
   // Sync with Signals toggle on mount and when it changes
   useEffect(() => {
@@ -116,32 +107,34 @@ export default function Chatbot() {
   }, [isOpen]);
 
   const handleToggle = () => {
-    const nextOpen = !isOpen;
-    setIsOpen(nextOpen);
-    if (nextOpen) {
-      trackChatOpened();
-    } else {
-      trackChatClosed();
-    }
+    setIsOpen(!isOpen);
   };
 
   const handleReset = () => {
     setMessages([WELCOME_MESSAGE]);
     setInput('');
-  };
-
-  const handleLinkClick = (slug: string) => {
-    trackChatRecommendationClicked(slug);
+    chatSessionIdRef.current = crypto.randomUUID();
   };
 
   const sendMessage = async () => {
     const trimmed = input.trim();
     if (!trimmed || isLoading) return;
 
-    trackChatMessageSent(trimmed);
-
     const userMessage: ChatMessage = { role: 'user', content: trimmed };
     const updatedMessages = [...messages, userMessage];
+    const messageIndex = updatedMessages.length - 1;
+    const conversationTurn = Math.ceil(updatedMessages.filter(m => m !== WELCOME_MESSAGE).length / 2);
+    const userMessageId = crypto.randomUUID();
+
+    trackUserMessage({
+      chatSessionId: chatSessionIdRef.current,
+      messageId: userMessageId,
+      messageIndex,
+      messageLength: trimmed.length,
+      messagePreview: trimmed.substring(0, 100),
+      conversationTurn,
+    });
+
     setMessages(updatedMessages);
     setInput('');
     setIsLoading(true);
@@ -149,6 +142,9 @@ export default function Chatbot() {
     // Add placeholder for assistant response
     const assistantMessage: ChatMessage = { role: 'assistant', content: '' };
     setMessages([...updatedMessages, assistantMessage]);
+
+    const invocationId = crypto.randomUUID();
+    const responseStartTime = Date.now();
 
     try {
       // Brief delay before fetching to feel more natural
@@ -207,6 +203,35 @@ export default function Chatbot() {
           }
         }
       }
+
+      // Extract recommended articles from <<slug>> markers
+      const { slugs } = parseArticleRefs(accumulated);
+      const recommendedArticles = slugs
+        .map((slug, index) => {
+          const article = getArticleBySlug(slug);
+          if (!article) return null;
+          return {
+            article_id: slug,
+            title: article.title,
+            author: article.author,
+            category: article.category,
+            position: index + 1,
+          };
+        })
+        .filter((a): a is NonNullable<typeof a> => a !== null);
+
+      trackAgentMessage({
+        chatSessionId: chatSessionIdRef.current,
+        messageId: crypto.randomUUID(),
+        messageIndex: messageIndex + 1,
+        messageLength: accumulated.length,
+        messagePreview: accumulated.substring(0, 100),
+        conversationTurn,
+        invocationId,
+        responseTimeMs: Date.now() - responseStartTime,
+        toolCallsCount: 0,
+        recommendedArticles: recommendedArticles.length > 0 ? recommendedArticles : undefined,
+      });
     } catch (error) {
       console.error('Chat error:', error);
       setMessages((prev) => {
@@ -292,7 +317,7 @@ export default function Chatbot() {
                   {slugs.length > 0 && (
                     <div className="max-w-[85%] mt-1 space-y-2">
                       {slugs.map((slug) => (
-                        <ArticleCard key={slug} slug={slug} onLinkClick={handleLinkClick} />
+                        <ArticleCard key={slug} slug={slug} />
                       ))}
                     </div>
                   )}

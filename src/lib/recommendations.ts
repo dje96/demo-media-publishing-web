@@ -10,6 +10,7 @@ export interface UserAttributes {
   num_ai_heartbeats?: number
   num_business_heartbeats?: number
   num_technology_heartbeats?: number
+  category_heartbeats?: Record<string, number>
   unique_article_ids?: string[]
 }
 

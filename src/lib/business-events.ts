@@ -2,22 +2,23 @@ import {
   trackArticleViewSpec,
   trackQuickSearchSpec,
   trackFullSearchSpec,
-  trackNewsletterSignupSpec,
   trackAdClickSpec,
   trackAdImpressionSpec,
   trackEnterSubscriptionFlowSpec,
   trackConfirmPaymentSpec,
   trackSelectAPlanSpec,
   trackPersonalDetailsSpec,
+  trackUserMessageSpec,
+  trackAgentMessageSpec,
   createArticle,
   createAd,
+  createAgent,
+  createMessage,
   type Article,
   type Ad,
   type ArticleQuickSearch,
   type ArticleFullSearch,
-  createAbTest
 } from '../../snowtype/snowplow';
-import { trackStructEvent } from '@snowplow/browser-tracker';
 
 // Article View Tracking
 export function trackArticleView(articleData: {
@@ -115,34 +116,6 @@ export function trackFullSearch(searchTerm: string, totalResults: number, articl
     console.error('Error tracking full search:', error);
   }
 }
-
-// Newsletter Signup Tracking
-export function trackNewsletterSignup(abTestData?: {
-  experiment_id: string;
-  experiment_name?: string;
-  variant_id: string;
-  variant_name?: string;
-}) {
-  console.log('Tracking newsletter signup');
-  
-  const context = abTestData ? [createAbTest({
-    experiment_id: abTestData.experiment_id,
-    experiment_name: abTestData.experiment_name || null,
-    variant_id: abTestData.variant_id,
-    variant_name: abTestData.variant_name || null
-  })] : undefined;
-
-  try {
-    trackNewsletterSignupSpec({
-      conversion_type: 'newsletter_signup',
-      context
-    });
-    console.log('Newsletter signup tracking successful');
-  } catch (error) {
-    console.error('Error tracking newsletter signup:', error);
-  }
-}
-
 
 
 // Ad Click Tracking
@@ -276,34 +249,101 @@ export function trackPersonalDetails() {
   }
 }
 
-// Chatbot Tracking
-export function trackChatOpened() {
-  trackStructEvent({
-    category: 'chatbot',
-    action: 'opened',
-  });
+// User Message Tracking
+export function trackUserMessage(messageData: {
+  chatSessionId: string;
+  messageId: string;
+  messageIndex: number;
+  messageLength: number;
+  messagePreview: string;
+  conversationTurn: number;
+}) {
+  console.log('Tracking user message:', messageData.messageId);
+
+  try {
+    trackUserMessageSpec({
+      sent_at: new Date(),
+      context: [
+        createMessage({
+          chat_session_id: messageData.chatSessionId,
+          id: messageData.messageId,
+          index: messageData.messageIndex,
+          length: messageData.messageLength,
+          preview: messageData.messagePreview,
+          role: 'user',
+          conversation_turn: messageData.conversationTurn,
+        }),
+      ],
+    });
+    console.log('User message tracking successful');
+  } catch (error) {
+    console.error('Error tracking user message:', error);
+  }
 }
 
-export function trackChatClosed() {
-  trackStructEvent({
-    category: 'chatbot',
-    action: 'closed',
-  });
-}
+// Agent Message Tracking
+export function trackAgentMessage(messageData: {
+  chatSessionId: string;
+  messageId: string;
+  messageIndex: number;
+  messageLength: number;
+  messagePreview: string;
+  conversationTurn: number;
+  invocationId: string;
+  responseTimeMs: number;
+  toolCallsCount: number;
+  tokensUsed?: number;
+  recommendedArticles?: Array<{
+    article_id: string;
+    title: string;
+    author: string;
+    category: string;
+    position: number;
+  }>;
+}) {
+  console.log('Tracking agent message:', messageData.messageId);
 
-export function trackChatMessageSent(messageText: string) {
-  trackStructEvent({
-    category: 'chatbot',
-    action: 'message_sent',
-    label: messageText.substring(0, 100),
-    property: 'user',
-  });
-}
+  const context: ReturnType<typeof createAgent | typeof createMessage | typeof createArticle>[] = [
+    createAgent({
+      type: 'chatbot',
+      invocation_id: messageData.invocationId,
+      model_name: 'claude-sonnet-4-20250514',
+      model_provider: 'anthropic',
+    }),
+    createMessage({
+      chat_session_id: messageData.chatSessionId,
+      id: messageData.messageId,
+      index: messageData.messageIndex,
+      length: messageData.messageLength,
+      preview: messageData.messagePreview,
+      role: 'assistant',
+      conversation_turn: messageData.conversationTurn,
+    }),
+  ];
 
-export function trackChatRecommendationClicked(articleSlug: string) {
-  trackStructEvent({
-    category: 'chatbot',
-    action: 'recommendation_clicked',
-    label: articleSlug,
-  });
+  if (messageData.recommendedArticles) {
+    for (const article of messageData.recommendedArticles) {
+      context.push(createArticle({
+        article_id: article.article_id,
+        title: article.title,
+        author: article.author,
+        category: article.category,
+        position: article.position,
+      }));
+    }
+  }
+
+  try {
+    trackAgentMessageSpec({
+      invocation_id: messageData.invocationId,
+      received_at: new Date(),
+      response_time_ms: messageData.responseTimeMs,
+      tokens_used: messageData.tokensUsed ?? null,
+      tool_calls_count: messageData.toolCallsCount,
+      context,
+    });
+    console.log('Agent message tracking successful');
+  } catch (error) {
+    console.error('Error tracking agent message:', error);
+  }
 }

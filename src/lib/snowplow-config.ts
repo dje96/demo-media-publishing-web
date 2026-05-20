@@ -36,8 +36,34 @@ import { createArticle, type Article } from '../../snowtype/snowplow';
 import { getArticleBySlug } from './data';
 import { isSignalsEnabled, hasAnalyticsConsent } from './consent';
 
+  // Guard against double initialization (React Strict Mode calls effects twice in dev)
+let trackerInitialized = false;
+
+// Suppress noisy "Error fetching interventions: {}" logs from the Signals plugin.
+// The plugin logs every EventSource error (including its own reconnect-aborts) at
+// ERROR level — these are benign and the SSE connection auto-recovers. We filter
+// only this specific message so other console.error output is untouched.
+function suppressSignalsReconnectNoise() {
+  if (typeof window === 'undefined') return;
+  const w = window as Window & { __signalsErrorFilterInstalled?: boolean };
+  if (w.__signalsErrorFilterInstalled) return;
+  w.__signalsErrorFilterInstalled = true;
+
+  const originalError = console.error.bind(console);
+  console.error = (...args: unknown[]) => {
+    const first = args[0];
+    if (typeof first === 'string' && first.includes('Error fetching interventions')) {
+      return;
+    }
+    originalError(...args);
+  };
+}
+
   // Initialize Snowplow tracker
 export function initializeSnowplow() {
+  if (trackerInitialized) return;
+  trackerInitialized = true;
+  suppressSignalsReconnectNoise();
   newTracker('sp1', 'https://com-snplow-sales-aws-prod1.collector.snplow.net', {
   // 127.0.0.1:9090 - Localhost
   // https://com-snplow-sales-aws-prod1.mini.snplow.net - Mini
@@ -48,7 +74,8 @@ export function initializeSnowplow() {
     eventMethod: 'post',
     bufferSize: 1,
     contexts: {
-      webPage: true
+      webPage: true,
+      browser: true
     },
     plugins: [LinkClickTrackingPlugin(), EnhancedConsentPlugin(), SnowplowMediaPlugin(), FormTrackingPlugin(), SignalsPlugin()],
     crossDomainLinker: function (linkElement) {
@@ -107,8 +134,8 @@ export function initializeSnowplow() {
   // Restore user ID from localStorage if available
   restoreUserFromStorage();
 
-  // Set up Signals intervention handlers
-  setupSignalsInterventions();
+  // Register Signals intervention handlers (but don't subscribe yet)
+  registerSignalsHandlers();
 
   // Configure anonymous tracking based on consent
   configureAnonymousTracking();
@@ -116,18 +143,25 @@ export function initializeSnowplow() {
   console.log('Snowplow tracker initialized');
 }
 
-// Set up Signals intervention handlers for paywall
-function setupSignalsInterventions() {
-  // Add intervention handler for subscription nudge
-  addInterventionHandlers({
-    paywallHandler(intervention) {
-      console.log("Paywall intervention received!", intervention);
+// Register Signals intervention handlers without subscribing
+function registerSignalsHandlers() {
+  // Only set up Signals if personalization is enabled
+  if (!isSignalsEnabled()) {
+    console.log('Signals personalization is disabled, skipping intervention setup');
+    return;
+  }
 
-      // Only process intervention if Signals personalization is enabled
-      if (!isSignalsEnabled()) {
-        console.log("Signals personalization is disabled, ignoring paywall intervention");
+  // Add intervention handler for subscription nudge.
+  // Note: the handler key is just an identifier — the Signals plugin calls every
+  // registered handler for every received intervention, so we must filter by
+  // `intervention.name` to only act on `subscription_nudge`.
+  addInterventionHandlers({
+    subscription_nudge(intervention) {
+      if (intervention.name !== 'subscription_nudge') {
         return;
       }
+
+      console.log("Subscription nudge intervention received!", intervention);
 
       // Store intervention in sessionStorage to persist across article pages
       if (typeof window !== 'undefined') {
@@ -145,12 +179,18 @@ function setupSignalsInterventions() {
     }
   });
 
-  // Subscribe to interventions from Signals endpoint
+  console.log('Signals intervention handlers registered');
+}
+
+// Subscribe to Signals interventions - call after first page view so entity IDs are available
+export function connectToSignals() {
+  if (!isSignalsEnabled()) return;
+
   subscribeToInterventions({
     endpoint: "https://7f9742b834d7.signals.snowplowanalytics.com"
   });
 
-  console.log('Signals interventions configured');
+  console.log('Signals subscription connected');
 }
 
 // Configure anonymous tracking based on current consent
@@ -209,6 +249,11 @@ export function hasPaywallInterventionTriggered(): boolean {
 
   try {
     const data = JSON.parse(stored);
+    // Guard against stale entries from interventions we no longer act on
+    if (data?.intervention?.name && data.intervention.name !== 'subscription_nudge') {
+      sessionStorage.removeItem('paywall-intervention');
+      return false;
+    }
     return data.triggered === true;
   } catch {
     return false;
@@ -311,16 +356,18 @@ function getArticleDataFromPath(pathname: string): Article | null {
 }
 
 // Track page view
+let signalsConnected = false;
+
 export function trackPageViewEvent() {
   // Ensure user ID is restored before tracking
   restoreUserFromStorage();
-  
+
   // Check if we're on an article page and get article data
   let articleEntity: Article | null = null;
   if (typeof window !== 'undefined') {
     articleEntity = getArticleDataFromPath(window.location.pathname);
   }
-  
+
   // Track page view with article context if available
   if (articleEntity) {
     trackPageView({
@@ -331,7 +378,13 @@ export function trackPageViewEvent() {
     trackPageView();
     console.log('Page view tracked');
   }
-  
+
+  // Connect to Signals after first page view so domain_userid/domain_sessionid are available
+  if (!signalsConnected) {
+    signalsConnected = true;
+    connectToSignals();
+  }
+
   // Clean up _sp parameter from URL after page view is tracked
   // This prevents the parameter from being shared when users copy the URL
   if (typeof window !== 'undefined' && /[?&]_sp=/.test(window.location.href)) {
