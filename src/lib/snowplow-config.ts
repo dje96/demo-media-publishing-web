@@ -39,11 +39,18 @@ import { isSignalsEnabled, hasAnalyticsConsent } from './consent';
   // Guard against double initialization (React Strict Mode calls effects twice in dev)
 let trackerInitialized = false;
 
-// Suppress noisy "Error fetching interventions: {}" logs from the Signals plugin.
-// The plugin logs every EventSource error (including its own reconnect-aborts) at
-// ERROR level — these are benign and the SSE connection auto-recovers. We filter
-// only this specific message so other console.error output is untouched.
-function suppressSignalsReconnectNoise() {
+// Suppress benign Snowplow console.error noise that Next.js's dev overlay would
+// otherwise promote to a fatal "unhandled error" screen. Two cases, both harmless:
+//
+//   1. "Error fetching interventions: {}" — the Signals plugin logs every
+//      EventSource error (including its own reconnect-aborts); the SSE connection
+//      auto-recovers.
+//   2. "Request timed out" — the tracker's HTTP emitter logs this when a collector
+//      POST exceeds connectionTimeout. retryFailedRequests is on by default, so the
+//      batch is retried and no events are lost.
+//
+// We filter only these specific messages so other console.error output is untouched.
+function suppressBenignTrackerNoise() {
   if (typeof window === 'undefined') return;
   const w = window as Window & { __signalsErrorFilterInstalled?: boolean };
   if (w.__signalsErrorFilterInstalled) return;
@@ -52,7 +59,11 @@ function suppressSignalsReconnectNoise() {
   const originalError = console.error.bind(console);
   console.error = (...args: unknown[]) => {
     const first = args[0];
-    if (typeof first === 'string' && first.includes('Error fetching interventions')) {
+    if (
+      typeof first === 'string' &&
+      (first.includes('Error fetching interventions') ||
+        first.includes('Request timed out'))
+    ) {
       return;
     }
     originalError(...args);
@@ -63,7 +74,7 @@ function suppressSignalsReconnectNoise() {
 export function initializeSnowplow() {
   if (trackerInitialized) return;
   trackerInitialized = true;
-  suppressSignalsReconnectNoise();
+  suppressBenignTrackerNoise();
   newTracker('sp1', 'https://com-snplow-sales-aws-prod1.collector.snplow.net', {
   // 127.0.0.1:9090 - Localhost
   // https://com-snplow-sales-aws-prod1.mini.snplow.net - Mini
@@ -73,6 +84,10 @@ export function initializeSnowplow() {
     cookieSameSite: 'Lax',
     eventMethod: 'post',
     bufferSize: 1,
+    // The Sales prod collector can be slow to respond (~3s+ round trips), so the
+    // default 5s timeout intermittently fires "Request timed out". Give it more
+    // headroom; failed requests are retried automatically (retryFailedRequests).
+    connectionTimeout: 10000,
     contexts: {
       webPage: true,
       browser: true
