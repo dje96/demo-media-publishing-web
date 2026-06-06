@@ -9,11 +9,11 @@ interface PageLayoutProps {
 
 export default function PageLayout({ children, className = "" }: PageLayoutProps) {
   return (
-    <div className={`min-h-screen bg-gray-50 ${className}`}>
+    <div className={`min-h-screen bg-paper ${className}`}>
       <Header />
       {children}
       <Footer />
       <ConsentManager />
     </div>
   )
-} 
+}

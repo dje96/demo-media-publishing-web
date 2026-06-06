@@ -1,8 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { Mail, X } from "lucide-react"
-import { trackNewsletterSignup } from "@/src/lib/business-events"
+import { X } from "lucide-react"
 
 export default function NewsletterSignup() {
   const [email, setEmail] = useState("")
@@ -11,79 +10,79 @@ export default function NewsletterSignup() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     if (email.trim()) {
-      // Track newsletter signup
-      // trackNewsletterSignup();
-      
       setShowPopup(true)
       setEmail("")
     }
   }
 
-  const closePopup = () => {
-    setShowPopup(false)
-  }
+  const closePopup = () => setShowPopup(false)
 
   return (
     <>
-      <div className="bg-white rounded-lg shadow-md p-6 border border-gray-200 w-full max-w-md">
-        <div className="flex items-start space-x-4 mb-4">
-          <div className="flex-shrink-0">
-            <div className="w-12 h-12 bg-brand-primary/10 rounded-full flex items-center justify-center">
-              <Mail className="h-6 w-6 text-brand-primary" />
-            </div>
-          </div>
-          <div className="flex-1 min-w-0">
-            <h3 className="text-lg font-bold text-gray-900 mb-2">Stay Updated</h3>
-            <p className="text-gray-600 text-sm">Get the latest news and insights delivered to your inbox.</p>
-          </div>
-        </div>
-        
+      <section className="border-t-2 border-ink pt-4">
+        <div className="kicker mb-3">Daily Briefing</div>
+        <h3
+          className="headline text-xl mb-2"
+          style={{ fontFamily: 'var(--font-newsreader), Georgia, serif' }}
+        >
+          Get the news that matters in your inbox each morning.
+        </h3>
+        <p
+          className="text-sm leading-snug text-muted-foreground mb-4"
+          style={{ fontFamily: 'var(--font-newsreader), Georgia, serif' }}
+        >
+          Expert analysis on business, technology and AI. No spam, unsubscribe anytime.
+        </p>
+
         <form onSubmit={handleSubmit} className="flex flex-col w-full space-y-2 no-track">
           <input
             type="email"
-            placeholder="Enter your email"
+            placeholder="Email address"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent"
+            className="w-full px-3 py-2.5 border border-ink bg-paper text-ink placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-ink"
             required
           />
           <button
             type="submit"
-            className="w-full px-4 py-2 bg-brand-primary hover:bg-brand-primary-hover text-white font-medium rounded-md transition-colors"
+            className="w-full px-4 py-2.5 bg-ink hover:bg-breaking text-paper text-xs font-semibold uppercase tracking-[0.12em] transition-colors cursor-pointer"
           >
-            Subscribe
+            Sign up
           </button>
         </form>
-      </div>
+      </section>
 
-      {/* Success Popup */}
       {showPopup && (
-        <div className="fixed inset-0 bg-black/40 backdrop-blur-custom flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-8 max-w-md mx-4 relative animate-in fade-in duration-200">
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-custom flex items-center justify-center z-50">
+          <div className="bg-paper border border-ink p-8 max-w-md mx-4 relative">
             <button
               onClick={closePopup}
-              className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors"
+              className="absolute top-4 right-4 text-muted-foreground hover:text-ink transition-colors cursor-pointer"
+              aria-label="Close"
             >
               <X className="h-5 w-5" />
             </button>
 
             <div className="text-center">
-              <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                </svg>
-              </div>
-
-              <h3 className="text-xl font-bold text-gray-900 mb-2">Thank you for subscribing!</h3>
-              <p className="text-gray-600 mb-6">
-                You&apos;ll receive the latest news and insights from The Plow directly in your inbox.
+              <div className="kicker mb-3">Confirmation</div>
+              <h3
+                className="headline text-2xl mb-3"
+                style={{ fontFamily: 'var(--font-newsreader), Georgia, serif' }}
+              >
+                You&apos;re subscribed.
+              </h3>
+              <p
+                className="text-muted-foreground mb-6"
+                style={{ fontFamily: 'var(--font-newsreader), Georgia, serif' }}
+              >
+                The Daily Briefing will arrive in your inbox tomorrow morning.
               </p>
 
               <button
                 onClick={closePopup}
-                className="px-6 py-2 bg-brand-primary hover:bg-brand-primary-hover text-white rounded-md transition-colors"
+                className="px-6 py-2.5 bg-ink hover:bg-breaking text-paper text-xs font-semibold uppercase tracking-[0.12em] transition-colors cursor-pointer"
               >
-                Got it!
+                Continue reading
               </button>
             </div>
           </div>

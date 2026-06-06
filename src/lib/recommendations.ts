@@ -12,6 +12,36 @@ export interface UserAttributes {
   num_technology_heartbeats?: number
   category_heartbeats?: Record<string, number>
   unique_article_ids?: string[]
+  // Attributes the `subscription_nudge` intervention is computed from.
+  unique_article_view_count?: number
+  article_heartbeats?: number
+}
+
+// Client-side mirror of the remote `subscription_nudge` Signals recipe.
+//
+// IMPORTANT: these thresholds MUST stay in sync with the intervention configured
+// in Snowplow Console for the `media_publishing_demo` service. The live recipe
+// fires when ALL of:
+//   unique_article_view_count >= 3  AND  article_heartbeats >= 5
+// They are the single source of truth for both the dual-path paywall fallback
+// (isEligibleForPaywall) and the Signals Inspector criteria display, so the
+// pull path behaves identically to the real push intervention.
+export const PAYWALL_CRITERIA = {
+  uniqueArticleViewCount: 3,
+  articleHeartbeats: 5,
+} as const;
+
+// Re-derive paywall eligibility locally from polled Signals attributes. This is
+// the PULL half of the dual-path pattern (guide §5.3): if the live push
+// intervention is slow or missed, the popup can still fire from these attributes.
+export function isEligibleForPaywall(attrs: UserAttributes | null): boolean {
+  if (!attrs) return false;
+  const uniqueViews = attrs.unique_article_view_count ?? attrs.unique_article_ids?.length ?? 0;
+  const heartbeats = attrs.article_heartbeats ?? 0;
+  return (
+    uniqueViews >= PAYWALL_CRITERIA.uniqueArticleViewCount &&
+    heartbeats >= PAYWALL_CRITERIA.articleHeartbeats
+  );
 }
 
 export function getRecommendations(count: number = 4): Article[] {
@@ -157,7 +187,7 @@ export function getSessionId(): string {
 }
 
 // Get user attributes from Signals via our API route
-async function getUserAttributesFromSignals(sessionId: string): Promise<UserAttributes | null> {
+export async function getUserAttributesFromSignals(sessionId: string): Promise<UserAttributes | null> {
   try {
     const response = await fetch('/api/signals', {
       method: 'POST',

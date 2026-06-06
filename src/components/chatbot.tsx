@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { MessageCircle, X, Send, Loader2, Clock, RotateCcw } from 'lucide-react';
 import { getSessionId } from '@/src/lib/recommendations';
-import { isSignalsEnabled } from '@/src/lib/consent';
+import { isSignalsEnabled, setSignalsEnabled } from '@/src/lib/consent';
 import { getArticleBySlug } from '@/src/lib/data';
 import { getCategoryByName } from '@/src/lib/config';
 import { trackUserMessage, trackAgentMessage } from '@/src/lib/business-events';
@@ -108,6 +108,15 @@ export default function Chatbot() {
 
   const handleToggle = () => {
     setIsOpen(!isOpen);
+  };
+
+  // Turn Signals personalization on/off — same mechanism as the footer toggle.
+  // setSignalsEnabled persists the preference and dispatches signalsPreferenceChanged,
+  // which keeps the footer toggle (and this one) in sync.
+  const handleToggleSignals = () => {
+    const newValue = !signalsOn;
+    setSignalsOn(newValue);
+    setSignalsEnabled(newValue);
   };
 
   const handleReset = () => {
@@ -267,11 +276,20 @@ export default function Chatbot() {
           <div className="bg-brand-primary text-white px-4 py-3 flex items-center justify-between shrink-0">
             <h3 className="font-semibold text-sm">Chat with The Daily Query</h3>
             <div className="flex items-center gap-1.5">
-              {signalsOn && (
-                <span className="text-[9px] font-medium bg-emerald-400 text-white px-1.5 py-0.5 rounded-full">
-                  Signals
-                </span>
-              )}
+              <button
+                onClick={handleToggleSignals}
+                className={`text-[9px] font-semibold px-1.5 py-0.5 rounded-full transition-colors cursor-pointer ${
+                  signalsOn
+                    ? 'bg-emerald-500 text-white hover:bg-emerald-600'
+                    : 'bg-white/20 text-white/70 hover:bg-white/30'
+                }`}
+                aria-pressed={signalsOn}
+                title={signalsOn
+                  ? 'Signals personalization on — click to turn off'
+                  : 'Signals personalization off — click to turn on'}
+              >
+                Signals {signalsOn ? 'On' : 'Off'}
+              </button>
               <button
                 onClick={handleReset}
                 className="text-white/80 hover:text-white transition-colors p-0.5"

@@ -3,8 +3,24 @@
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { X, Lock } from "lucide-react"
-import { hasPaywallInterventionTriggered, clearPaywallIntervention } from "@/src/lib/snowplow-config"
+import { hasPaywallInterventionTriggered } from "@/src/lib/snowplow-config"
+import { getSessionId, getUserAttributesFromSignals, isEligibleForPaywall } from "@/src/lib/recommendations"
+import { isSignalsEnabled } from "@/src/lib/consent"
 import { useUser } from "@/src/contexts/user-context"
+
+// How often the PULL path re-derives eligibility from polled Signals attributes.
+const POLL_MS = 5000
+
+// Once the visitor dismisses the paywall we must not auto-show it again for the
+// rest of the session — the eligibility attributes stay over threshold, so the
+// poll would otherwise re-trigger every few seconds. We persist the dismissal in
+// sessionStorage so it survives the popup remounting on each article navigation.
+const DISMISS_KEY = 'paywall-dismissed'
+
+function wasPaywallDismissed(): boolean {
+  if (typeof window === 'undefined') return false
+  return sessionStorage.getItem(DISMISS_KEY) === 'true'
+}
 
 interface PaywallPopupProps {
   onClose?: () => void
@@ -14,30 +30,40 @@ export default function PaywallPopup({ onClose }: PaywallPopupProps) {
   const router = useRouter()
   const { user } = useUser()
   const [isVisible, setIsVisible] = useState(false)
+  const [dismissed, setDismissed] = useState(false)
 
   useEffect(() => {
-    // Check if intervention has been triggered and user is not logged in
+    // Sync the dismissal flag from sessionStorage on mount (e.g. after navigating
+    // to another article where this popup remounts).
+    setDismissed(wasPaywallDismissed())
+
+    // Check if intervention has been triggered and user is not logged in. Respect
+    // a prior dismissal so navigating between articles doesn't re-show the popup.
     const checkIntervention = () => {
-      if (hasPaywallInterventionTriggered() && !user?.isLoggedIn) {
-        setIsVisible(true)
-      } else if (user?.isLoggedIn) {
-        // Hide popup if user logs in
+      if (user?.isLoggedIn) {
         setIsVisible(false)
+      } else if (hasPaywallInterventionTriggered() && !wasPaywallDismissed()) {
+        setIsVisible(true)
       }
     }
 
     checkIntervention()
 
-    // Listen for intervention triggered event
+    // A discrete trigger event (a real push intervention or the presenter
+    // "Trigger now" button) is an explicit, one-off signal — unlike the
+    // continuous poll — so it resets any prior dismissal and shows the popup.
     const handleInterventionTriggered = () => {
-      // Only show if user is not logged in
-      if (!user?.isLoggedIn) {
-        setIsVisible(true)
-      }
+      if (user?.isLoggedIn) return
+      if (typeof window !== 'undefined') sessionStorage.removeItem(DISMISS_KEY)
+      setDismissed(false)
+      setIsVisible(true)
     }
 
-    // Listen for intervention cleared event
+    // Clearing the intervention (presenter Clear / Signals disabled) also resets
+    // the dismissal so a fresh trigger can show it again.
     const handleInterventionCleared = () => {
+      if (typeof window !== 'undefined') sessionStorage.removeItem(DISMISS_KEY)
+      setDismissed(false)
       setIsVisible(false)
       onClose?.()
     }
@@ -51,13 +77,54 @@ export default function PaywallPopup({ onClose }: PaywallPopupProps) {
     }
   }, [onClose, user?.isLoggedIn])
 
+  // PULL path (dual-path, guide §5.3): the push handler above is the "real"
+  // trigger, but live interventions can lag on stage. So we also poll the
+  // Signals attributes and re-derive eligibility locally via isEligibleForPaywall
+  // (which mirrors the remote recipe). Whichever path fires first shows the popup.
+  // Suppressed entirely once dismissed so it can't re-trigger every few seconds.
+  useEffect(() => {
+    if (user?.isLoggedIn || dismissed || !isSignalsEnabled()) return
+
+    let cancelled = false
+
+    const maybeShow = async () => {
+      if (cancelled || wasPaywallDismissed()) return
+      // PUSH path already satisfied — nothing to recompute.
+      if (hasPaywallInterventionTriggered()) {
+        setIsVisible(true)
+        return
+      }
+      const sessionId = getSessionId()
+      if (!sessionId) return
+      const attrs = await getUserAttributesFromSignals(sessionId)
+      if (!cancelled && !wasPaywallDismissed() && isEligibleForPaywall(attrs)) {
+        setIsVisible(true)
+      }
+    }
+
+    maybeShow()
+    const id = setInterval(maybeShow, POLL_MS)
+    return () => {
+      cancelled = true
+      clearInterval(id)
+    }
+  }, [user?.isLoggedIn, dismissed])
+
+  // Mark the paywall dismissed for the rest of the session and hide it.
+  const dismissPaywall = () => {
+    if (typeof window !== 'undefined') sessionStorage.setItem(DISMISS_KEY, 'true')
+    setDismissed(true)
+    setIsVisible(false)
+  }
+
   const handleSubscribe = () => {
-    // Redirect to subscription page
+    // Treat heading to the subscribe page as a dismissal so it doesn't re-pop.
+    dismissPaywall()
     router.push('/subscribe')
   }
 
   const handleClose = () => {
-    setIsVisible(false)
+    dismissPaywall()
     onClose?.()
   }
 
@@ -69,67 +136,54 @@ export default function PaywallPopup({ onClose }: PaywallPopupProps) {
       <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
 
       {/* Popup */}
-      <div className="relative bg-white rounded-lg shadow-2xl max-w-md w-full mx-4 p-8 animate-fade-in">
-        {/* Close button */}
+      <div className="relative bg-paper border-t-4 border-breaking shadow-2xl max-w-md w-full mx-4 p-8 animate-fade-in">
         <button
           onClick={handleClose}
-          className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors"
+          className="absolute top-4 right-4 text-muted-foreground hover:text-ink transition-colors cursor-pointer"
           aria-label="Close"
         >
-          <X className="h-6 w-6" />
+          <X className="h-5 w-5" />
         </button>
 
-        {/* Icon */}
-        <div className="flex justify-center mb-6">
-          <div className="bg-brand-primary/10 rounded-full p-4">
-            <Lock className="h-12 w-12 text-brand-primary" />
-          </div>
-        </div>
-
-        {/* Content */}
         <div className="text-center">
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">
-            Enjoying Our Content?
+          <div className="flex justify-center mb-4">
+            <Lock className="h-7 w-7 text-ink" />
+          </div>
+          <div className="kicker kicker--breaking mb-3">Subscribers Only</div>
+          <h2
+            className="headline text-3xl mb-4"
+            style={{ fontFamily: 'var(--font-newsreader), Georgia, serif' }}
+          >
+            Read without limits.
           </h2>
-          <p className="text-gray-600 mb-6">
-            You've been reading some great articles! Subscribe now to get unlimited access to all our premium content, exclusive insights, and more.
+          <p
+            className="text-base leading-snug text-muted-foreground mb-6"
+            style={{ fontFamily: 'var(--font-newsreader), Georgia, serif' }}
+          >
+            You&apos;ve been reading some of our best work. Subscribe for unlimited access, exclusive analysis and an ad-free experience.
           </p>
 
-          {/* Benefits */}
-          <div className="bg-gray-50 rounded-lg p-4 mb-6 text-left">
-            <ul className="space-y-2 text-sm text-gray-700">
-              <li className="flex items-start">
-                <span className="text-brand-primary mr-2">✓</span>
-                <span>Unlimited access to all articles</span>
-              </li>
-              <li className="flex items-start">
-                <span className="text-brand-primary mr-2">✓</span>
-                <span>Exclusive subscriber-only content</span>
-              </li>
-              <li className="flex items-start">
-                <span className="text-brand-primary mr-2">✓</span>
-                <span>Ad-free reading experience</span>
-              </li>
-              <li className="flex items-start">
-                <span className="text-brand-primary mr-2">✓</span>
-                <span>Support quality journalism</span>
-              </li>
+          <div className="border-t border-b border-rule py-5 mb-6 text-left">
+            <ul className="space-y-2.5 text-sm text-ink" style={{ fontFamily: 'var(--font-newsreader), Georgia, serif' }}>
+              <li className="flex items-start"><span className="text-ink font-bold mr-2">—</span><span>Unlimited articles</span></li>
+              <li className="flex items-start"><span className="text-ink font-bold mr-2">—</span><span>Subscriber-only reporting</span></li>
+              <li className="flex items-start"><span className="text-ink font-bold mr-2">—</span><span>Ad-free reading</span></li>
+              <li className="flex items-start"><span className="text-ink font-bold mr-2">—</span><span>Support independent journalism</span></li>
             </ul>
           </div>
 
-          {/* CTA Buttons */}
           <div className="space-y-3">
             <button
               onClick={handleSubscribe}
-              className="w-full bg-brand-primary hover:bg-brand-primary-dark text-white font-semibold py-3 px-6 rounded-lg transition-colors"
+              className="w-full bg-ink hover:bg-breaking text-paper font-semibold uppercase tracking-[0.12em] text-xs py-3 px-6 transition-colors cursor-pointer"
             >
-              Subscribe Now
+              Subscribe now
             </button>
             <button
               onClick={handleClose}
-              className="w-full text-gray-600 hover:text-gray-800 font-medium py-2 transition-colors"
+              className="w-full text-muted-foreground hover:text-ink text-xs uppercase tracking-[0.12em] py-1 transition-colors cursor-pointer"
             >
-              Maybe Later
+              Maybe later
             </button>
           </div>
         </div>

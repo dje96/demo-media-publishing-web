@@ -1,21 +1,21 @@
 "use client"
 
-import { Menu, X, Home, Building2, Cpu, Brain, LogIn, LogOut, User, Mail } from "lucide-react"
-import { useState } from "react"
+import { Menu, X, LogOut, User } from "lucide-react"
+import { useEffect, useState } from "react"
 import { usePathname, useRouter } from "next/navigation"
 import Link from "next/link"
 import SearchDropdown from "./search-dropdown"
 import LoginModal from "./login-modal"
 import { useUser } from "../contexts/user-context"
 import { siteConfig } from "@/src/lib/config"
+import { formatDate } from "@/src/lib/utils"
 
-// Icon mapping for navigation items
-const iconMap = {
-  Home,
-  Building2,
-  Cpu,
-  Brain,
-  Mail
+function MastheadDate() {
+  const [today, setToday] = useState<string>("")
+  useEffect(() => {
+    setToday(formatDate(new Date(), { weekday: "long", year: "numeric", month: "long", day: "numeric" }))
+  }, [])
+  return <span suppressHydrationWarning>{today}</span>
 }
 
 export default function Header() {
@@ -34,108 +34,82 @@ export default function Header() {
     router.push('/subscribe')
   }
 
-  // Render authentication skeleton while loading
-  const renderAuthSkeleton = () => (
-    <div className="flex items-center space-x-2">
-      <div className="w-20 h-8 bg-gray-200 rounded-md animate-pulse"></div>
-    </div>
-  )
-
-  // Render authentication content
   const renderAuthContent = () => {
     if (isLoading) {
-      return renderAuthSkeleton()
+      return <div className="w-20 h-7 bg-muted animate-pulse" />
     }
 
     if (user) {
       return (
-        <div className="flex items-center space-x-2 px-3 py-2 text-sm text-gray-700">
-          <User className="h-4 w-4" />
-          <span className="hidden sm:inline">{user.email}</span>
+        <div className="flex items-center gap-3 text-xs uppercase tracking-[0.12em] text-ink">
+          <User className="h-3.5 w-3.5" />
+          <span className="hidden sm:inline normal-case tracking-normal text-muted-foreground">{user.email}</span>
           <button
             onClick={logout}
-            className="flex items-center space-x-1 px-3 py-2 text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-100 rounded-md transition-colors"
+            className="flex items-center gap-1.5 hover:text-breaking transition-colors cursor-pointer"
           >
-            <LogOut className="h-4 w-4" />
-            <span className="hidden sm:inline">Logout</span>
+            <LogOut className="h-3.5 w-3.5" />
+            <span>Sign out</span>
           </button>
         </div>
       )
     }
 
-    // Unauthenticated: show Subscribe and Login buttons
     return (
       <div className="flex items-center gap-2">
         <button
+          onClick={() => setIsLoginModalOpen(true)}
+          className="text-xs font-semibold uppercase tracking-[0.12em] text-ink hover:text-breaking transition-colors cursor-pointer"
+        >
+          Sign in
+        </button>
+        <span className="text-rule" aria-hidden>|</span>
+        <button
           onClick={handleSubscribeClick}
-          className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-brand-primary hover:bg-brand-primary-hover rounded-md transition-colors"
+          className="bg-ink text-paper px-4 py-2 text-xs font-semibold uppercase tracking-[0.12em] hover:bg-breaking transition-colors cursor-pointer"
         >
           Subscribe
-        </button>
-        <button
-          onClick={() => setIsLoginModalOpen(true)}
-          className="inline-flex items-center px-4 py-2 text-sm font-medium text-brand-primary border border-brand-primary bg-white hover:bg-gray-50 rounded-md transition-colors"
-        >
-          Login
         </button>
       </div>
     )
   }
 
-  // Render mobile authentication content
   const renderMobileAuthContent = () => {
     if (isLoading) {
-      return (
-        <div className="px-3 py-2 border-t">
-          <div className="space-y-2">
-            <div className="w-32 h-4 bg-gray-200 rounded animate-pulse"></div>
-            <div className="w-24 h-8 bg-gray-200 rounded animate-pulse"></div>
-          </div>
-        </div>
-      )
+      return <div className="px-3 py-3 border-t border-rule"><div className="w-32 h-4 bg-muted animate-pulse" /></div>
     }
 
     if (user) {
       return (
-        <div className="px-3 py-2 border-t">
-          <div className="space-y-2">
-            <div className="flex items-center px-3 py-2 text-sm text-gray-700">
-              <User className="h-4 w-4 mr-3" />
-              <span>{user.email}</span>
-            </div>
-            <button
-              onClick={logout}
-              className="flex items-center w-full px-3 py-2 text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50 transition-colors"
-            >
-              <LogOut className="h-4 w-4 mr-3" />
-              Logout
-            </button>
+        <div className="px-3 py-3 border-t border-rule space-y-2">
+          <div className="flex items-center text-xs text-muted-foreground">
+            <User className="h-3.5 w-3.5 mr-2" />
+            <span>{user.email}</span>
           </div>
+          <button
+            onClick={logout}
+            className="flex items-center w-full text-xs uppercase tracking-[0.12em] font-semibold text-ink hover:text-breaking transition-colors cursor-pointer"
+          >
+            <LogOut className="h-3.5 w-3.5 mr-2" />
+            Sign out
+          </button>
         </div>
       )
     }
 
     return (
-      <div className="px-3 py-2 border-t space-y-2">
+      <div className="px-3 py-3 border-t border-rule space-y-2">
         <button
-          onClick={() => {
-            handleSubscribeClick()
-            setIsMenuOpen(false)
-          }}
-          className="flex items-center w-full px-3 py-2 text-base font-medium text-white bg-brand-primary hover:bg-brand-primary-hover rounded-md transition-colors"
+          onClick={() => { handleSubscribeClick(); setIsMenuOpen(false) }}
+          className="w-full bg-ink text-paper py-2.5 text-xs font-semibold uppercase tracking-[0.12em] hover:bg-breaking transition-colors cursor-pointer"
         >
-          <LogIn className="h-4 w-4 mr-3" />
           Subscribe
         </button>
         <button
-          onClick={() => {
-            setIsLoginModalOpen(true)
-            setIsMenuOpen(false)
-          }}
-          className="flex items-center w-full px-3 py-2 text-base font-medium text-brand-primary border border-brand-primary bg-white hover:bg-gray-50 rounded-md transition-colors"
+          onClick={() => { setIsLoginModalOpen(true); setIsMenuOpen(false) }}
+          className="w-full border border-ink text-ink py-2.5 text-xs font-semibold uppercase tracking-[0.12em] hover:bg-ink hover:text-paper transition-colors cursor-pointer"
         >
-          <LogIn className="h-4 w-4 mr-3" />
-          Login
+          Sign in
         </button>
       </div>
     )
@@ -143,105 +117,99 @@ export default function Header() {
 
   return (
     <>
-      <header className="bg-white shadow-sm border-b">
+      <header className="bg-paper border-b border-ink">
+        {/* Top utility bar */}
+        <div className="border-b border-rule">
+          <div className="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center h-9 text-[11px] uppercase tracking-[0.12em] text-muted-foreground">
+            <MastheadDate />
+            <div className="hidden md:block">
+              {siteConfig.features.userAccounts && renderAuthContent()}
+            </div>
+          </div>
+        </div>
+
+        {/* Masthead */}
         <div className="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            {/* Logo */}
-            <div className="flex-shrink-0">
-              <Link href="/" className="flex items-center text-xl sm:text-2xl font-bold text-brand-primary hover:text-brand-primary-hover transition-colors">
-                <svg 
-                  className="w-6 h-6 sm:w-8 sm:h-8 mr-2" 
-                  viewBox="0 0 32 32" 
-                  fill="currentColor"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <circle cx="11" cy="15.5" r="1.5"/>
-                  <path d="M12,12H10V8h2a2,2,0,0,0,0-4H10A2.0023,2.0023,0,0,0,8,6v.5H6V6a4.0045,4.0045,0,0,1,4-4h2a4,4,0,0,1,0,8Z" transform="translate(0 0)"/>
-                  <path d="M22.4479,21.0337A10.971,10.971,0,0,0,19.9211,4.7446l-.999,1.73A8.9967,8.9967,0,1,1,5,14H3a10.9916,10.9916,0,0,0,18.0338,8.4478L28.5859,30,30,28.5859Z" transform="translate(0 0)"/>
-                </svg>
-                <span className="hidden sm:inline">{siteConfig.brand.name}</span>
+          <div className="grid grid-cols-3 items-center py-5 sm:py-7">
+            {/* Left: mobile menu button */}
+            <div className="flex items-center lg:hidden">
+              <button
+                onClick={() => setIsMenuOpen(!isMenuOpen)}
+                className="inline-flex items-center justify-center p-2 text-ink hover:text-breaking focus:outline-none cursor-pointer"
+                aria-label="Toggle menu"
+              >
+                {isMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+              </button>
+            </div>
+            <div className="hidden lg:block text-xs uppercase tracking-[0.18em] text-muted-foreground">
+              Today&apos;s Edition
+            </div>
+
+            {/* Center: wordmark */}
+            <div className="flex justify-center">
+              <Link
+                href="/"
+                className="font-serif text-3xl sm:text-5xl font-bold tracking-[-0.01em] text-ink whitespace-nowrap"
+                style={{ fontFamily: 'var(--font-newsreader), Georgia, serif' }}
+              >
+                {siteConfig.brand.name}
               </Link>
             </div>
 
-            {/* Desktop Navigation - Hidden on mobile */}
-            <nav className="hidden lg:flex space-x-4">
-              {siteConfig.navigation.mainMenu.map((item) => {
-                const Icon = iconMap[item.icon as keyof typeof iconMap] || Home
-                const isActive = pathname === item.href
-                return (
-                  <Link
-                    key={item.name}
-                    href={item.href}
-                    className={`flex flex-col items-center px-3 py-2 text-sm font-medium transition-colors ${
-                      isActive ? "border-b-2 border-brand-primary text-brand-primary" : "text-gray-700 hover:text-gray-600"
-                    }`}
-                  >
-                    <Icon className="h-4 w-4 mb-1" />
-                    {item.name}
-                  </Link>
-                )
-              })}
-            </nav>
-
-            {/* Search Box and Login */}
-            <div className="flex items-center space-x-4">
-              {/* Search */}
-              {siteConfig.features.search && (
-              <div className="hidden lg:block">
-                <SearchDropdown />
-              </div>
-              )}
-
-              {/* User Menu - Hidden on mobile, shown in hamburger menu */}
-              <div className="hidden lg:block">
-                {siteConfig.features.userAccounts && renderAuthContent()}
-              </div>
-
-              {/* Mobile menu button */}
-              <button
-                onClick={() => setIsMenuOpen(!isMenuOpen)}
-                className="lg:hidden inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500"
-              >
-                {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-              </button>
+            {/* Right: search */}
+            <div className="flex justify-end items-center">
+              {siteConfig.features.search && <SearchDropdown />}
             </div>
           </div>
+        </div>
 
-          {/* Mobile Navigation */}
-          {isMenuOpen && (
-            <div className="lg:hidden">
-              <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3 border-t">
-                {siteConfig.navigation.mainMenu.map((item) => {
-                  const Icon = iconMap[item.icon as keyof typeof iconMap] || Home
-                  const isActive = pathname === item.href
-                  return (
+        {/* Section nav (under masthead) */}
+        <nav className="border-t border-b border-rule bg-paper">
+          <div className="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8">
+            <ul className="hidden lg:flex justify-center items-center gap-8 h-11">
+              {siteConfig.navigation.mainMenu.map((item) => {
+                const isActive = pathname === item.href
+                return (
+                  <li key={item.name}>
                     <Link
-                      key={item.name}
                       href={item.href}
-                      className={`flex items-center px-3 py-2 text-base font-medium transition-colors ${
-                        isActive ? "bg-brand-primary/10 text-brand-primary" : "text-gray-700 hover:text-gray-600 hover:bg-gray-50"
+                      className={`text-[11px] font-semibold uppercase tracking-[0.18em] transition-colors ${
+                        isActive ? "text-breaking" : "text-ink hover:text-breaking"
                       }`}
-                      onClick={() => setIsMenuOpen(false)}
                     >
-                      <Icon className="h-4 w-4 mr-3" />
                       {item.name}
                     </Link>
-                  )
-                })}
+                  </li>
+                )
+              })}
+            </ul>
+          </div>
+        </nav>
 
-                {/* Mobile Search */}
-                {siteConfig.features.search && (
-                <div className="px-3 py-2">
-                  <SearchDropdown />
-                </div>
-                )}
-
-                {/* Mobile Login/Logout */}
-                {siteConfig.features.userAccounts && renderMobileAuthContent()}
-              </div>
-            </div>
-          )}
-        </div>
+        {/* Mobile drawer */}
+        {isMenuOpen && (
+          <div className="lg:hidden border-b border-rule bg-paper">
+            <ul className="px-4 py-3 space-y-1">
+              {siteConfig.navigation.mainMenu.map((item) => {
+                const isActive = pathname === item.href
+                return (
+                  <li key={item.name}>
+                    <Link
+                      href={item.href}
+                      onClick={() => setIsMenuOpen(false)}
+                      className={`block px-2 py-2.5 text-sm font-semibold uppercase tracking-[0.12em] border-b border-rule ${
+                        isActive ? "text-breaking" : "text-ink hover:text-breaking"
+                      }`}
+                    >
+                      {item.name}
+                    </Link>
+                  </li>
+                )
+              })}
+            </ul>
+            {siteConfig.features.userAccounts && renderMobileAuthContent()}
+          </div>
+        )}
       </header>
 
       <LoginModal

@@ -1,6 +1,4 @@
 import Link from "next/link"
-import { Clock } from "lucide-react"
-import { getCategoryColor } from "@/src/lib/utils"
 
 interface Recommendation {
   id: string
@@ -23,7 +21,6 @@ function generateSlug(title: string): string {
 }
 
 export default function RecommendationCard({ recommendation }: RecommendationCardProps) {
-  // Map recommendation titles to their slugs
   const slugMap: { [key: string]: string } = {
     "Digital Privacy in the Modern Age": "digital-privacy-modern-age",
     "The Evolution of Social Media": "evolution-social-media",
@@ -35,25 +32,18 @@ export default function RecommendationCard({ recommendation }: RecommendationCar
   const slug = recommendation.slug || slugMap[recommendation.title] || generateSlug(recommendation.title)
 
   return (
-    <Link href={`/articles/${slug}`}>
-      <div className="border-b-2 border-gray-100 last:border-b-0 last:pb-0 last:mb-0 hover:bg-gray-50 p-3 -m-3 rounded transition-colors cursor-pointer mb-2.5 mt-2.5 pb-6 pt-3">
-        <div className="flex justify-between mb-px items-center">
-          <h4 className="text-sm font-medium text-gray-900 hover:text-brand-primary cursor-pointer line-clamp-2 flex-1 mr-2 transition-colors">
-            {recommendation.title}
-          </h4>
-          <span
-            className={`inline-block px-2 py-1 text-xs font-semibold rounded whitespace-nowrap ${getCategoryColor(recommendation.category)}`}
-          >
-            {recommendation.category}
-          </span>
-        </div>
-        <div className="flex justify-between text-xs text-gray-500 items-center">
-          <span>{recommendation.author}</span>
-          <div className="flex items-center">
-            <Clock className="h-3 w-3 mr-1" />
-            {recommendation.readTime} min read
-          </div>
-        </div>
+    <Link href={`/articles/${slug}`} className="group block py-3 border-b border-rule last:border-b-0">
+      <div className="kicker kicker--muted mb-1.5 text-[10px]">{recommendation.category}</div>
+      <h4
+        className="headline text-[15px] leading-snug group-hover:underline decoration-1 underline-offset-4 line-clamp-3 mb-1.5"
+        style={{ fontFamily: 'var(--font-newsreader), Georgia, serif' }}
+      >
+        {recommendation.title}
+      </h4>
+      <div className="text-[10px] uppercase tracking-[0.1em] text-muted-foreground">
+        {recommendation.author}
+        <span className="mx-1.5">·</span>
+        {recommendation.readTime} min read
       </div>
     </Link>
   )
