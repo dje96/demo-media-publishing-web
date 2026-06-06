@@ -47,30 +47,20 @@ export function formatDateLong(date: string | Date): string {
 }
 
 /**
- * Get category color classes based on category name
- * Centralized function to replace duplicate logic across components
+ * Editorial category styling — kicker (all-caps text label), not a colored pill.
+ * Returns class names suitable for a small uppercase label.
  */
-export function getCategoryColor(category: string): string {
-  const categoryMap: Record<string, string> = {
-    technology: "bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400",
-    business: "bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400",
-    ai: "bg-purple-100 text-purple-800 dark:bg-purple-900/20 dark:text-purple-400",
-    default: "bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-400"
-  }
-  
-  const normalizedCategory = category.toLowerCase().trim()
-  return categoryMap[normalizedCategory] || categoryMap.default
+export function getCategoryColor(_category: string): string {
+  // Single editorial treatment for all categories.
+  return "kicker"
 }
 
-/**
- * Get brand color classes for consistent styling
- */
 export const brandColors = {
-  primary: "text-brand-primary hover:text-brand-primary-hover",
-  bgPrimary: "bg-brand-primary hover:bg-brand-primary-hover",
-  borderPrimary: "border-brand-primary",
-  bgPrimaryLight: "bg-brand-primary/10",
-  textPrimary: "text-brand-primary"
+  primary: "text-ink hover:text-breaking",
+  bgPrimary: "bg-ink hover:bg-breaking text-paper",
+  borderPrimary: "border-ink",
+  bgPrimaryLight: "bg-muted",
+  textPrimary: "text-ink"
 } as const
 
 /**

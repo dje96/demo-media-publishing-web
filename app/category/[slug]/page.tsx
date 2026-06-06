@@ -30,11 +30,12 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
   return (
     <PageLayout>
       <MainContentLayout advertising={{ sponsored: true, category: category.name }}>
-        <PageHeader 
-          title={category.name} 
-          description={category.description} 
+        <PageHeader
+          kicker="Section"
+          title={category.name}
+          description={category.description}
         />
-        <ArticleGrid articles={articles} />
+        <ArticleGrid articles={articles} columns={3} />
       </MainContentLayout>
     </PageLayout>
   )

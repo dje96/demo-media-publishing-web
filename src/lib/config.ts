@@ -153,6 +153,18 @@ export interface Article {
   readTime: number
   slug: string
   content?: string
+  /**
+   * Optional embedded video. When set, the article body is split on the
+   * `{{VIDEO}}` marker token and the player is rendered in the gap (or
+   * appended if no marker is present). Powers Snowplow Media plugin tracking.
+   */
+  video?: {
+    id: string
+    src: string
+    title: string
+    kicker?: string
+    poster?: string
+  }
 }
 
 // Define categories first to avoid circular dependency
@@ -202,7 +214,6 @@ export const siteConfig: SiteConfig = {
       { name: "AI", href: "/category/ai", category: "company" },
       { name: "Contact", href: "/contact", category: "support" },
       { name: "Advertiser Redirect", href: "/advertiser-redirect", category: "support" },
-      { name: "Privacy Policy", href: "https://snowplow.io/privacy-policy/", category: "legal" },
       { name: "Snowplow.io", href: "https://snowplow.io", category: "legal" }
     ]
   },

@@ -1,19 +1,25 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Newsreader, Inter } from "next/font/google";
 import "@/src/styles/globals.css";
 import { UserProvider } from "@/src/contexts/user-context";
 import SnowplowProvider from "@/src/components/snowplow-provider";
 import { siteConfig } from "@/src/lib/config";
 import Chatbot from "@/src/components/chatbot";
+import SignalsInspector from "@/src/components/signals-inspector";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const newsreader = Newsreader({
+  variable: "--font-newsreader",
   subsets: ["latin"],
+  weight: ["400", "500", "600", "700", "800"],
+  style: ["normal", "italic"],
+  display: "swap",
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const inter = Inter({
+  variable: "--font-inter",
   subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  display: "swap",
 });
 
 export const metadata: Metadata = {
@@ -53,7 +59,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         {/* End Google Tag Manager */}
       </head>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${newsreader.variable} ${inter.variable} antialiased`}
       >
         {/* Google Tag Manager (noscript) */}
         <noscript>
@@ -69,6 +75,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
           <UserProvider>
             {children}
             <Chatbot />
+            <SignalsInspector />
           </UserProvider>
         </SnowplowProvider>
       </body>

@@ -21,16 +21,15 @@ export default function LoginModal({ isOpen, onClose, onLogin }: LoginModalProps
     if (!email.trim()) return
 
     setIsLoading(true)
-    // Simulate API call
     await new Promise(resolve => setTimeout(resolve, 1000))
 
-    // Track login success
     trackSelfDescribingEvent({
       event: {
         schema: 'iglu:com.demo/login/jsonschema/1-0-0',
         data: {
           login_method: 'email',
-          login_status: 'error'        }
+          login_status: 'error'
+        }
       }
     });
 
@@ -40,34 +39,44 @@ export default function LoginModal({ isOpen, onClose, onLogin }: LoginModalProps
   }
 
   return (
-    <div className="fixed inset-0 bg-black/40 backdrop-blur-custom flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4">
-        <div className="flex items-center justify-between p-6 border-b">
-          <h2 className="text-xl font-semibold text-gray-900">Login</h2>
+    <div className="fixed inset-0 bg-black/50 backdrop-blur-custom flex items-center justify-center z-50">
+      <div className="bg-paper border border-ink shadow-xl max-w-md w-full mx-4">
+        <div className="flex items-center justify-between px-6 py-5 border-b border-rule">
+          <div>
+            <div className="kicker mb-1">Account</div>
+            <h2
+              className="headline text-2xl"
+              style={{ fontFamily: 'var(--font-newsreader), Georgia, serif' }}
+            >
+              Sign in
+            </h2>
+          </div>
           <button
             onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 transition-colors"
+            className="text-muted-foreground hover:text-ink transition-colors cursor-pointer"
+            aria-label="Close"
           >
-            <X className="h-6 w-6" />
+            <X className="h-5 w-5" />
           </button>
         </div>
 
         <form onSubmit={handleSubmit} className="p-6">
           <div className="mb-4">
-            <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
-              Email Address
+            <label htmlFor="email" className="block text-[11px] uppercase tracking-[0.12em] font-semibold text-ink mb-2">
+              Email address
             </label>
             <div className="relative">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <Mail className="h-5 w-5 text-gray-400" />
+                <Mail className="h-4 w-4 text-muted-foreground" />
               </div>
               <input
                 type="email"
                 id="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="Enter your email address"
-                className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                placeholder="you@example.com"
+                className="block w-full pl-10 pr-3 py-2.5 border border-rule bg-paper text-ink placeholder-muted-foreground focus:outline-none focus:border-ink"
+                style={{ fontFamily: 'var(--font-newsreader), Georgia, serif' }}
                 required
               />
             </div>
@@ -76,23 +85,26 @@ export default function LoginModal({ isOpen, onClose, onLogin }: LoginModalProps
           <button
             type="submit"
             disabled={isLoading || !email.trim()}
-            className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            className="w-full flex justify-center py-3 px-4 text-xs font-semibold uppercase tracking-[0.12em] text-paper bg-ink hover:bg-breaking transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
           >
             {isLoading ? (
               <div className="flex items-center">
-                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                Logging in...
+                <div className="animate-spin h-3 w-3 border-2 border-paper border-t-transparent mr-2" />
+                Signing in…
               </div>
             ) : (
-              "Login"
+              "Sign in"
             )}
           </button>
 
-          <p className="mt-4 text-xs text-gray-500 text-center">
-            This is a demo site. Any email address will log you in for demonstration purposes.
+          <p
+            className="mt-4 text-xs text-muted-foreground text-center italic"
+            style={{ fontFamily: 'var(--font-newsreader), Georgia, serif' }}
+          >
+            Demo site — any email will sign you in.
           </p>
         </form>
       </div>
     </div>
   )
-} 
+}

@@ -6,8 +6,9 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-serif: var(--font-newsreader);
+  --font-sans: var(--font-inter);
+  --font-mono: var(--font-inter);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -37,12 +38,16 @@
   --color-popover: var(--popover);
   --color-card-foreground: var(--card-foreground);
   --color-card: var(--card);
-  
-  /* Brand Colors */
+
+  /* Brand Colors — Editorial */
   --color-brand-primary: var(--brand-primary);
   --color-brand-primary-hover: var(--brand-primary-hover);
   --color-brand-secondary: var(--brand-secondary);
-  
+  --color-ink: var(--ink);
+  --color-paper: var(--paper);
+  --color-rule: var(--rule);
+  --color-breaking: var(--breaking);
+
   /* Semantic Colors */
   --color-success: var(--success);
   --color-success-foreground: var(--success-foreground);
@@ -50,228 +55,336 @@
   --color-warning-foreground: var(--warning-foreground);
   --color-info: var(--info);
   --color-info-foreground: var(--info-foreground);
-  
+
   /* Category Colors */
   --color-category-technology: var(--category-technology);
   --color-category-business: var(--category-business);
   --color-category-ai: var(--category-ai);
   --color-category-default: var(--category-default);
-  
-  --radius-sm: calc(var(--radius) - 4px);
-  --radius-md: calc(var(--radius) - 2px);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) + 4px);
+
+  --radius-sm: 0px;
+  --radius-md: 0px;
+  --radius-lg: 0px;
+  --radius-xl: 0px;
 }
 
 :root {
-  --radius: 0.625rem;
-  
-  /* Brand Colors - Using your original purple */
-  --brand-primary: #9e62dd;           /* Your original purple */
-  --brand-primary-hover: #8a4fd1;     /* Slightly darker purple for hover */
-  --brand-secondary: #646cff;         /* Blue for secondary actions */
-  
-  /* Alternative using oklch (more modern, better color space) */
-  /* --brand-primary: oklch(0.577 0.245 27.325);      */
-  /* --brand-primary-hover: oklch(0.522 0.245 27.325); */
-  /* --brand-secondary: oklch(0.646 0.222 41.116);     */
-  
-  /* Semantic Colors */
-  --success: #10b981;                 /* Green */
+  --radius: 0px;
+
+  /* Editorial palette — restrained, NYT-inspired */
+  --ink: #121212;                /* near-black headlines + body */
+  --paper: #ffffff;              /* paper white */
+  --rule: #e2e2e2;               /* hairline rules */
+  --breaking: #C8102E;           /* single restrained red for breaking only */
+
+  --brand-primary: #121212;            /* ink as brand */
+  --brand-primary-hover: #000000;
+  --brand-secondary: #5A5A5A;
+
+  /* Semantic Colors (kept for inputs etc.) */
+  --success: #1f7a3a;
   --success-foreground: #ffffff;
-  --warning: #f59e0b;                 /* Amber */
-  --warning-foreground: #000000;
-  --info: #3b82f6;                    /* Blue */
+  --warning: #8a6d1e;
+  --warning-foreground: #ffffff;
+  --info: #1f3f7a;
   --info-foreground: #ffffff;
-  
-  /* Category Colors */
-  --category-technology: #10b981;     /* Green */
-  --category-business: #3b82f6;       /* Blue */
-  --category-ai: #9e62dd;             /* Purple (your brand color) */
-  --category-default: #6b7280;        /* Gray */
-  
+
+  /* Category Colors — all ink (kicker-style typographic difference, not colour pills) */
+  --category-technology: #121212;
+  --category-business: #121212;
+  --category-ai: #121212;
+  --category-default: #5A5A5A;
+
   /* Base Colors */
   --background: #ffffff;
-  --foreground: #171717;
+  --foreground: #121212;
   --card: #ffffff;
-  --card-foreground: #171717;
+  --card-foreground: #121212;
   --popover: #ffffff;
-  --popover-foreground: #171717;
-  --primary: #171717;
-  --primary-foreground: #fafafa;
-  --secondary: #f5f5f5;
-  --secondary-foreground: #171717;
-  --muted: #f5f5f5;
-  --muted-foreground: #737373;
-  --accent: #f5f5f5;
-  --accent-foreground: #171717;
-  --destructive: #ef4444;
-  --border: #e5e5e5;
-  --input: #e5e5e5;
-  --ring: #a3a3a3;
-  --chart-1: #10b981;
-  --chart-2: #3b82f6;
-  --chart-3: #6366f1;
-  --chart-4: #f59e0b;
-  --chart-5: #f97316;
-  --sidebar: #fafafa;
-  --sidebar-foreground: #171717;
-  --sidebar-primary: #171717;
-  --sidebar-primary-foreground: #fafafa;
-  --sidebar-accent: #f5f5f5;
-  --sidebar-accent-foreground: #171717;
-  --sidebar-border: #e5e5e5;
-  --sidebar-ring: #a3a3a3;
+  --popover-foreground: #121212;
+  --primary: #121212;
+  --primary-foreground: #ffffff;
+  --secondary: #f5f4f1;
+  --secondary-foreground: #121212;
+  --muted: #f5f4f1;
+  --muted-foreground: #5A5A5A;
+  --accent: #f5f4f1;
+  --accent-foreground: #121212;
+  --destructive: #C8102E;
+  --border: #e2e2e2;
+  --input: #e2e2e2;
+  --ring: #5A5A5A;
+  --chart-1: #121212;
+  --chart-2: #5A5A5A;
+  --chart-3: #8a8a8a;
+  --chart-4: #b8b8b8;
+  --chart-5: #C8102E;
+  --sidebar: #ffffff;
+  --sidebar-foreground: #121212;
+  --sidebar-primary: #121212;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #f5f4f1;
+  --sidebar-accent-foreground: #121212;
+  --sidebar-border: #e2e2e2;
+  --sidebar-ring: #5A5A5A;
 }
 
 .dark {
-  /* Brand Colors - Dark mode variants */
-  --brand-primary: #a855f7;           /* Lighter purple for dark mode */
-  --brand-primary-hover: #9333ea;     /* Darker purple for hover in dark mode */
-  --brand-secondary: #818cf8;         /* Lighter blue for dark mode */
-  
-  /* Semantic Colors - Dark mode variants */
-  --success: #22c55e;                 /* Brighter green for dark mode */
+  --ink: #f5f4f1;
+  --paper: #121212;
+  --rule: #2a2a2a;
+  --breaking: #E5314B;
+
+  --brand-primary: #f5f4f1;
+  --brand-primary-hover: #ffffff;
+  --brand-secondary: #b8b8b8;
+
+  --success: #4cae67;
   --success-foreground: #000000;
-  --warning: #fbbf24;                 /* Brighter amber for dark mode */
+  --warning: #d4a93b;
   --warning-foreground: #000000;
-  --info: #60a5fa;                    /* Lighter blue for dark mode */
+  --info: #6aa3e8;
   --info-foreground: #000000;
-  
-  /* Category Colors - Dark mode variants */
-  --category-technology: #22c55e;     /* Brighter green */
-  --category-business: #60a5fa;       /* Lighter blue */
-  --category-ai: #a855f7;             /* Lighter purple */
-  --category-default: #9ca3af;        /* Lighter gray */
-  
-  /* Base Colors */
-  --background: #171717;
-  --foreground: #fafafa;
-  --card: #262626;
-  --card-foreground: #fafafa;
-  --popover: #262626;
-  --popover-foreground: #fafafa;
-  --primary: #f5f5f5;
-  --primary-foreground: #171717;
-  --secondary: #404040;
-  --secondary-foreground: #fafafa;
-  --muted: #404040;
-  --muted-foreground: #a3a3a3;
-  --accent: #404040;
-  --accent-foreground: #fafafa;
-  --destructive: #f87171;
-  --border: rgba(255, 255, 255, 0.1);
-  --input: rgba(255, 255, 255, 0.15);
-  --ring: #737373;
-  --chart-1: #8b5cf6;
-  --chart-2: #06b6d4;
-  --chart-3: #f59e0b;
-  --chart-4: #ec4899;
-  --chart-5: #f97316;
-  --sidebar: #262626;
-  --sidebar-foreground: #fafafa;
-  --sidebar-primary: #8b5cf6;
-  --sidebar-primary-foreground: #fafafa;
-  --sidebar-accent: #404040;
-  --sidebar-accent-foreground: #fafafa;
-  --sidebar-border: rgba(255, 255, 255, 0.1);
-  --sidebar-ring: #737373;
+
+  --category-technology: #f5f4f1;
+  --category-business: #f5f4f1;
+  --category-ai: #f5f4f1;
+  --category-default: #b8b8b8;
+
+  --background: #121212;
+  --foreground: #f5f4f1;
+  --card: #1a1a1a;
+  --card-foreground: #f5f4f1;
+  --popover: #1a1a1a;
+  --popover-foreground: #f5f4f1;
+  --primary: #f5f4f1;
+  --primary-foreground: #121212;
+  --secondary: #1f1f1f;
+  --secondary-foreground: #f5f4f1;
+  --muted: #1f1f1f;
+  --muted-foreground: #b8b8b8;
+  --accent: #1f1f1f;
+  --accent-foreground: #f5f4f1;
+  --destructive: #E5314B;
+  --border: #2a2a2a;
+  --input: #2a2a2a;
+  --ring: #5A5A5A;
+  --chart-1: #f5f4f1;
+  --chart-2: #b8b8b8;
+  --chart-3: #8a8a8a;
+  --chart-4: #5A5A5A;
+  --chart-5: #E5314B;
+  --sidebar: #1a1a1a;
+  --sidebar-foreground: #f5f4f1;
+  --sidebar-primary: #f5f4f1;
+  --sidebar-primary-foreground: #121212;
+  --sidebar-accent: #1f1f1f;
+  --sidebar-accent-foreground: #f5f4f1;
+  --sidebar-border: #2a2a2a;
+  --sidebar-ring: #5A5A5A;
 }
 
 @layer base {
   * {
     @apply border-border outline-ring/50;
   }
+  html {
+    font-feature-settings: "kern", "liga", "calt";
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
   body {
     @apply bg-background text-foreground;
+    font-family: var(--font-inter), system-ui, sans-serif;
+  }
+
+  /* Editorial typographic utilities */
+  .font-serif {
+    font-family: var(--font-newsreader), Georgia, "Times New Roman", serif;
+    font-feature-settings: "kern", "liga", "onum";
   }
 }
 
-/* Article content styling */
+/* Editorial helpers */
+.kicker {
+  font-family: var(--font-inter), system-ui, sans-serif;
+  font-size: 0.6875rem;       /* 11px */
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink);
+}
+
+.kicker--muted {
+  color: var(--muted-foreground);
+}
+
+.kicker--breaking {
+  color: var(--breaking);
+}
+
+.headline {
+  font-family: var(--font-newsreader), Georgia, "Times New Roman", serif;
+  font-weight: 700;
+  letter-spacing: -0.015em;
+  line-height: 1.1;
+  color: var(--ink);
+}
+
+.byline {
+  font-family: var(--font-inter), system-ui, sans-serif;
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted-foreground);
+}
+
+.rule {
+  border-top: 1px solid var(--rule);
+}
+
+.rule-thick {
+  border-top: 2px solid var(--ink);
+}
+
+.divider-dot::after {
+  content: "·";
+  margin: 0 0.5rem;
+  color: var(--muted-foreground);
+}
+
+/* Article body — narrow column, serif, drop cap */
 .article-content {
-  @apply leading-relaxed;
-  color: #1f2937; /* text-gray-800 equivalent */
+  font-family: var(--font-newsreader), Georgia, "Times New Roman", serif;
+  font-size: 1.125rem;     /* 18px */
+  line-height: 1.7;
+  color: var(--ink);
+  max-width: 38rem;
+}
+
+.article-content > p:first-of-type::first-letter {
+  font-family: var(--font-newsreader), Georgia, "Times New Roman", serif;
+  font-weight: 700;
+  float: left;
+  font-size: 4.25rem;
+  line-height: 0.9;
+  padding: 0.35rem 0.65rem 0 0;
+  margin-top: 0.2rem;
+  color: var(--ink);
 }
 
 .article-content h1 {
-  @apply text-3xl font-bold mt-8 mb-4;
-  color: #111827; /* text-gray-900 equivalent */
+  font-family: var(--font-newsreader), Georgia, serif;
+  font-size: 2rem;
+  font-weight: 700;
+  margin-top: 2.5rem;
+  margin-bottom: 1rem;
+  letter-spacing: -0.01em;
+  color: var(--ink);
 }
 
 .article-content h2 {
-  @apply text-2xl font-bold mt-8 mb-4;
-  color: #111827; /* text-gray-900 equivalent */
+  font-family: var(--font-newsreader), Georgia, serif;
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-top: 2.5rem;
+  margin-bottom: 1rem;
+  color: var(--ink);
 }
 
 .article-content h3 {
-  @apply text-xl font-semibold mt-6 mb-3;
-  color: #111827; /* text-gray-900 equivalent */
+  font-family: var(--font-newsreader), Georgia, serif;
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-top: 2rem;
+  margin-bottom: 0.75rem;
+  color: var(--ink);
 }
 
 .article-content h4 {
-  @apply text-lg font-semibold mt-4 mb-2;
-  color: #111827; /* text-gray-900 equivalent */
+  font-family: var(--font-inter), system-ui, sans-serif;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  margin-top: 1.75rem;
+  margin-bottom: 0.5rem;
+  color: var(--ink);
 }
 
 .article-content p {
-  @apply mb-4 text-base leading-7;
+  margin-bottom: 1.25rem;
 }
 
-.article-content ul {
-  @apply mb-4 pl-6;
-}
-
+.article-content ul,
 .article-content ol {
-  @apply mb-4 pl-6;
+  margin-bottom: 1.25rem;
+  padding-left: 1.5rem;
 }
 
 .article-content li {
-  @apply mb-2;
+  margin-bottom: 0.5rem;
 }
 
 .article-content ul li {
-  @apply list-disc;
+  list-style: disc;
 }
 
 .article-content ol li {
-  @apply list-decimal;
+  list-style: decimal;
 }
 
 .article-content blockquote {
-  @apply border-l-4 pl-4 italic my-4;
-  border-left-color: #d1d5db; /* border-gray-300 equivalent */
-  color: #4b5563; /* text-gray-600 equivalent */
+  font-family: var(--font-newsreader), Georgia, serif;
+  font-style: italic;
+  font-size: 1.5rem;
+  line-height: 1.4;
+  border-left: 3px solid var(--ink);
+  padding-left: 1.25rem;
+  margin: 2rem 0;
+  color: var(--ink);
 }
 
 .article-content a {
-  @apply underline;
-  color: #2563eb; /* text-blue-600 equivalent */
+  color: var(--ink);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
 }
 
 .article-content a:hover {
-  color: #1d4ed8; /* text-blue-800 equivalent */
+  color: var(--breaking);
 }
 
 .article-content strong {
-  @apply font-semibold;
+  font-weight: 700;
 }
 
 .article-content em {
-  @apply italic;
+  font-style: italic;
 }
 
 .article-content code {
-  @apply px-1 py-0.5 rounded text-sm font-mono;
-  background-color: #f3f4f6; /* bg-gray-100 equivalent */
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 0.9em;
+  padding: 0.1em 0.35em;
+  background-color: var(--secondary);
+  border-radius: 0;
 }
 
 .article-content pre {
-  @apply p-4 rounded-lg overflow-x-auto my-4;
-  background-color: #f3f4f6; /* bg-gray-100 equivalent */
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  padding: 1rem;
+  background-color: var(--secondary);
+  overflow-x: auto;
+  margin: 1.5rem 0;
+  font-size: 0.9rem;
 }
 
 .article-content pre code {
-  @apply bg-transparent p-0;
+  background-color: transparent;
+  padding: 0;
 }
 
 /* Custom backdrop blur for modals */

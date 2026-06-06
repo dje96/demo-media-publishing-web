@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
 import { Suspense } from "react"
 import SearchPageClient from "./search-page-client"
+import SearchSkeleton from "./search-skeleton"
 
 export const metadata: Metadata = {
-  title: "Search | The Powder Post",
+  title: "Search | The Daily Query",
   description: "Search through our collection of articles and insights",
 };
 
@@ -20,7 +21,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
   const query = q || ""
 
   return (
-    <Suspense fallback={<div>Loading search results...</div>}>
+    <Suspense fallback={<SearchSkeleton />}>
       <SearchResults query={query} />
     </Suspense>
   )
