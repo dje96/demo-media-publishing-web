@@ -42,6 +42,9 @@ export default function NewsletterSignup() {
             onChange={(e) => setEmail(e.target.value)}
             className="w-full px-3 py-2.5 border border-ink bg-paper text-ink placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-ink"
             required
+            // Password-manager extensions (e.g. Keeper) inject attributes onto this
+            // input before hydration, causing a benign SSR/client mismatch warning.
+            suppressHydrationWarning
           />
           <button
             type="submit"

@@ -15,6 +15,8 @@ export interface UserAttributes {
   // Attributes the `subscription_nudge` intervention is computed from.
   unique_article_view_count?: number
   article_heartbeats?: number
+  // Identity attribute group.
+  last_snowplow_id?: string
 }
 
 // Client-side mirror of the remote `subscription_nudge` Signals recipe.
