@@ -50,52 +50,6 @@ export function getRecommendations(count: number = 4): Article[] {
   return allArticles.slice(0, count)
 }
 
-// Get a personalized featured article based on the last viewed category
-export async function getPersonalizedFeaturedArticle(): Promise<Article> {
-  try {
-    // Check if Signals personalization is enabled
-    if (!isSignalsEnabled()) {
-      console.log('Signals personalization is disabled, using default featured article');
-      return allArticles[0];
-    }
-
-    const sessionId = getSessionId();
-
-    if (!sessionId) {
-      // Fall back to default featured article if no session ID
-      return allArticles[0];
-    }
-
-    const userAttributes = await getUserAttributesFromSignals(sessionId);
-
-    if (!userAttributes) {
-      // Fall back to default featured article if no attributes
-      return allArticles[0];
-    }
-
-    // Use the last_category_viewed attribute to recommend a featured article
-    if (userAttributes.last_category_viewed) {
-      const categoryArticles = allArticles.filter(
-        article => article.category === userAttributes.last_category_viewed
-      );
-
-      if (categoryArticles.length > 0) {
-        // Return the first article from the last viewed category
-        console.log(`Personalized featured article from category: ${userAttributes.last_category_viewed}`);
-        return categoryArticles[0];
-      }
-    }
-
-    // Fall back to default featured article if no matching category articles
-    return allArticles[0];
-
-  } catch (error) {
-    console.error('Error generating personalized featured article:', error);
-    // Fall back to default featured article on error
-    return allArticles[0];
-  }
-}
-
 // Get personalized recommendations based on Signals attributes
 export async function getPersonalizedRecommendations(count: number = 4): Promise<Article[]> {
   try {
@@ -140,6 +94,80 @@ export async function getPersonalizedRecommendations(count: number = 4): Promise
     return getRecommendations(count);
   }
 } 
+
+// Personalized "Recommended Reading" panel powered by Signals.
+//
+// When Signals is enabled we slot two targeted recommendations:
+//   1. an article from the reader's `last_category_viewed`
+//   2. an article from the reader's `last_author_viewed`
+// In both cases we exclude anything already in `unique_article_ids` so we never
+// recommend an article the reader has already seen. Any unfilled slots fall back
+// to unseen articles first, then to the default recommendations.
+export async function getSignalsRecommendedReading(
+  count: number = 2,
+): Promise<{ articles: Article[]; personalized: boolean }> {
+  const fallback = () => ({ articles: getRecommendations(count), personalized: false });
+
+  try {
+    if (!isSignalsEnabled()) return fallback();
+
+    const sessionId = getSessionId();
+    if (!sessionId) return fallback();
+
+    const attrs = await getUserAttributesFromSignals(sessionId);
+    if (!attrs) return fallback();
+
+    const viewed = new Set(attrs.unique_article_ids ?? []);
+    const picked: Article[] = [];
+    const pickedIds = new Set<string>();
+
+    const take = (article?: Article) => {
+      if (article && !pickedIds.has(article.id)) {
+        picked.push(article);
+        pickedIds.add(article.id);
+      }
+    };
+
+    const isCandidate = (article: Article) =>
+      !viewed.has(article.id) && !pickedIds.has(article.id);
+
+    // Slot 1 — same category the reader last viewed.
+    if (attrs.last_category_viewed) {
+      take(
+        allArticles.find(
+          (a) => a.category === attrs.last_category_viewed && isCandidate(a),
+        ),
+      );
+    }
+
+    // Slot 2 — same author the reader last viewed.
+    if (attrs.last_author_viewed) {
+      take(
+        allArticles.find(
+          (a) => a.author === attrs.last_author_viewed && isCandidate(a),
+        ),
+      );
+    }
+
+    const personalized = picked.length > 0;
+
+    // Fill any remaining slots with unseen articles first…
+    for (const article of allArticles) {
+      if (picked.length >= count) break;
+      if (isCandidate(article)) take(article);
+    }
+    // …then, if still short, allow already-seen articles as a last resort.
+    for (const article of allArticles) {
+      if (picked.length >= count) break;
+      take(article);
+    }
+
+    return { articles: picked.slice(0, count), personalized };
+  } catch (error) {
+    console.error('Error generating Signals recommended reading:', error);
+    return fallback();
+  }
+}
 
 // Get the actual Snowplow session ID
 export function getSessionId(): string {

@@ -3,8 +3,10 @@
 import RecommendationCard from "./recommendation-card"
 import NewsletterSignup from "./newsletter-signup"
 import Advertisement from "./advertisement"
-import { getRecommendations } from "@/src/lib/recommendations"
+import { getRecommendations, getSignalsRecommendedReading } from "@/src/lib/recommendations"
+import { isSignalsEnabled } from "@/src/lib/consent"
 import { siteConfig } from "@/src/lib/config"
+import { Activity } from "lucide-react"
 import { useState, useEffect } from "react"
 
 interface SidebarProps {
@@ -31,22 +33,40 @@ export default function Sidebar({
 }: SidebarProps) {
   const [recommendations, setRecommendations] = useState<Recommendation[]>([])
   const [loading, setLoading] = useState(true)
+  const [signalsOn, setSignalsOn] = useState(false)
 
   useEffect(() => {
-    function loadRecommendations() {
+    let cancelled = false
+
+    async function loadRecommendations() {
       try {
         setLoading(true)
-        const defaultRecs = getRecommendations(recommendationCount)
-        setRecommendations(defaultRecs)
+        const enabled = isSignalsEnabled()
+        setSignalsOn(enabled)
+
+        if (enabled) {
+          const { articles } = await getSignalsRecommendedReading(recommendationCount)
+          if (!cancelled) setRecommendations(articles)
+        } else {
+          if (!cancelled) setRecommendations(getRecommendations(recommendationCount))
+        }
       } catch (error) {
         console.error('Error loading recommendations:', error)
-        setRecommendations([])
+        if (!cancelled) setRecommendations(getRecommendations(recommendationCount))
       } finally {
-        setLoading(false)
+        if (!cancelled) setLoading(false)
       }
     }
 
     loadRecommendations()
+
+    // Re-load when the presenter toggles Signals on/off.
+    const onSignalsChange = () => loadRecommendations()
+    window.addEventListener('signalsPreferenceChanged', onSignalsChange)
+    return () => {
+      cancelled = true
+      window.removeEventListener('signalsPreferenceChanged', onSignalsChange)
+    }
   }, [recommendationCount])
 
   return (
@@ -54,8 +74,16 @@ export default function Sidebar({
       <div className="sticky top-8 space-y-8">
         {/* Recommendations */}
         <section>
-          <div className="border-t-2 border-ink pt-3 mb-2">
+          <div className="border-t-2 border-ink pt-3 mb-2 flex items-center justify-between gap-2">
             <h3 className="kicker">Recommended Reading</h3>
+            {signalsOn && (
+              <span
+                className="inline-flex items-center justify-center rounded-full bg-emerald-500 p-1 text-white"
+                title="Personalized by Snowplow Signals"
+              >
+                <Activity className="h-3 w-3" />
+              </span>
+            )}
           </div>
           {loading ? (
             <div className="space-y-3">
