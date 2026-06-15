@@ -38,6 +38,10 @@ export default function Footer() {
 
   const handleUtmReload = () => {
     newSession()
+    // The paywall is keyed to domain_sessionid, which newSession() resets, so
+    // clear the stored intervention too — otherwise the hidden text persists
+    // into the new session after reload.
+    clearPaywallIntervention()
     const currentUrl = window.location.href
     const utmParams = getRandomUtmParameters()
     const urlWithUtm = buildUrlWithUtm(currentUrl, utmParams)
