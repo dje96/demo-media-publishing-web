@@ -23,15 +23,6 @@ import {
 
 const POLL_MS = 4000
 
-// Warehouse (batch) attributes — these come from the data warehouse rather than
-// the real-time stream, so for the demo they are fixed values that always show.
-const WAREHOUSE_ATTRIBUTES = [
-  { label: "propensity_score", value: "0.73" },
-  { label: "preferred_format", value: "text" },
-  { label: "engagement_tier", value: "high" },
-  { label: "avg_articles_per_week", value: "4.2" },
-]
-
 function fmtList(v?: unknown[]): string {
   if (!v || v.length === 0) return "—"
   return v.length <= 3 ? v.join(", ") : `${v.length} items`
@@ -88,7 +79,6 @@ function paywallCriteria(a: UserAttributes) {
 
 export default function SignalsInspector() {
   const [open, setOpen] = useState(false)
-  const [tab, setTab] = useState<"live" | "warehouse">("live")
   const [attrs, setAttrs] = useState<UserAttributes | null>(null)
   const [loading, setLoading] = useState(false)
   const [syncedAt, setSyncedAt] = useState<number | null>(null)
@@ -212,69 +202,33 @@ export default function SignalsInspector() {
             </div>
           </div>
 
-          {/* Tabs */}
-          <div className="flex shrink-0 border-b border-rule bg-paper">
-            {([
-              { id: "live", label: "Live Attributes" },
-              { id: "warehouse", label: "Warehouse Attributes" },
-            ] as const).map((t) => (
-              <button
-                key={t.id}
-                onClick={() => setTab(t.id)}
-                className={`flex-1 cursor-pointer px-3 py-2.5 text-[11px] font-semibold uppercase tracking-[0.1em] transition-colors ${
-                  tab === t.id
-                    ? "border-b-2 border-ink text-ink"
-                    : "text-muted-foreground hover:text-ink"
-                }`}
-              >
-                {t.label}
-              </button>
-            ))}
-          </div>
-
           {/* Body */}
           <div className="flex-1 space-y-5 overflow-y-auto p-4 text-sm">
-            {/* Attributes — min-height reserved so the panel size is stable across tabs.
-                Sized to the taller Live tab (9 rows); bump this if rows are added. */}
-            <section className="min-h-[18rem]">
-              {tab === "warehouse" ? (
-                <>
-                  <h4 className="mb-3 text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">
-                    Warehouse attributes
-                  </h4>
-                  <div className="space-y-2.5">
-                    {WAREHOUSE_ATTRIBUTES.map((r) => (
-                      <div key={r.label} className="flex items-center justify-between gap-3">
-                        <code className="truncate font-mono text-xs text-muted-foreground">{r.label}</code>
-                        <span className="truncate font-semibold text-ink">{r.value}</span>
-                      </div>
-                    ))}
-                  </div>
-                </>
-              ) : !configured ? (
-                <div className="flex flex-col items-center py-8 text-muted-foreground">
-                  <Activity className="mb-3 h-10 w-10 opacity-50" />
-                  <p className="font-medium">Signals not configured</p>
-                  <p className="mt-1 text-center text-xs">
-                    Set SIGNALS_API_URL and SNOWPLOW_CONSOLE_API_KEY* in your environment.
-                  </p>
-                </div>
-              ) : loading && !hasData ? (
-                <div className="animate-pulse space-y-3">
-                  {Array.from({ length: 4 }).map((_, i) => (
-                    <div key={i} className="h-4 rounded bg-accent" />
-                  ))}
-                </div>
-              ) : !hasData ? (
-                <div className="flex flex-col items-center py-8 text-muted-foreground">
-                  <Activity className="mb-3 h-10 w-10 opacity-50" />
-                  <p className="font-medium">No data yet</p>
-                  <p className="mt-1 text-center text-xs">
-                    Read a few articles and Signals attributes will appear here.
-                  </p>
-                </div>
-              ) : (
-                <>
+            {!configured ? (
+              <div className="flex flex-col items-center py-8 text-muted-foreground">
+                <Activity className="mb-3 h-10 w-10 opacity-50" />
+                <p className="font-medium">Signals not configured</p>
+                <p className="mt-1 text-center text-xs">
+                  Set SIGNALS_API_URL and SNOWPLOW_CONSOLE_API_KEY* in your environment.
+                </p>
+              </div>
+            ) : loading && !hasData ? (
+              <div className="animate-pulse space-y-3">
+                {Array.from({ length: 4 }).map((_, i) => (
+                  <div key={i} className="h-4 rounded bg-accent" />
+                ))}
+              </div>
+            ) : !hasData ? (
+              <div className="flex flex-col items-center py-8 text-muted-foreground">
+                <Activity className="mb-3 h-10 w-10 opacity-50" />
+                <p className="font-medium">No data yet</p>
+                <p className="mt-1 text-center text-xs">
+                  Read a few articles and Signals attributes will appear here.
+                </p>
+              </div>
+            ) : (
+              <>
+                <section>
                   <h4 className="mb-3 text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">
                     Live attributes
                   </h4>
@@ -286,14 +240,11 @@ export default function SignalsInspector() {
                       </div>
                     ))}
                   </div>
-                </>
-              )}
-            </section>
+                </section>
 
-            <hr className="border-rule" />
+                <hr className="border-rule" />
 
-            {/* Interventions — shown on both tabs */}
-            <section>
+                <section>
               <h4 className="mb-3 text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">
                 Interventions
               </h4>
@@ -353,8 +304,9 @@ export default function SignalsInspector() {
                   )}
                 </div>
               </div>
-            </section>
-
+                </section>
+              </>
+            )}
             <p className="pt-2 text-center text-[10px] text-muted-foreground/70">
               This panel is visible to demo presenters only
             </p>
